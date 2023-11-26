@@ -32,6 +32,8 @@ class RegPair:
 class Registers:
     def __init__(self: Self):
         self._AF = RegPair()
+        self._BC = RegPair()
+        self._DE = RegPair()
         self._HL = RegPair()
         self._PC = RegPair()
         self._SP = RegPair()
@@ -44,6 +46,35 @@ class Registers:
     @A.setter
     def A(self: Self, value: int) -> None:
         self._AF.h = value
+    
+    
+    
+    @property
+    def B(self: Self) -> int:
+        return self._BC.l
+    @B.setter
+    def B(self: Self, value: int) -> None:
+        self._BC.l = value
+    
+    
+    
+    @property
+    def BC(self: Self) -> int:
+        return (self._BC.h << 8) | (self._BC.l)
+    @BC.setter
+    def BC(self: Self, value: int) -> None:
+        self._BC.h = value >> 8
+        self._BC.l = value & 0xFF
+    
+    
+    
+    @property
+    def DE(self: Self) -> int:
+        return (self._DE.h << 8) | (self._DE.l)
+    @DE.setter
+    def DE(self: Self, value: int) -> None:
+        self._DE.h = value >> 8
+        self._DE.l = value & 0xFF
     
     
     

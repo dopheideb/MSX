@@ -1,13 +1,13 @@
-from   typing import Self
+from   typing import Self, Iterable, Union, SupportsIndex, Any
 
 class RAM:
     def __init__(self: Self, size: int=128*1024):
         self._ram = bytearray(size)
     
-    def __getitem__(self: Self, key: int) -> int:
+    def __getitem__(self: Self, key: Union[int, SupportsIndex]) -> int:
         return self._ram[key]
     
-    def __setitem__(self: Self, key: int, value: int) -> None:
+    def __setitem__(self: Self, key: Any, value: Union[int, bytes]) -> None:
         self._ram[key] = value
     
     
