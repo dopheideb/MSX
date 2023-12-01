@@ -6,7 +6,6 @@ import logging
 import os
 from   typing import Self, Tuple
 import z80
-import z80.disasm.instruction
 import z80.registers
 
 logging.basicConfig(level=logging.DEBUG)
@@ -35,12 +34,12 @@ if __name__ == '__main__':
     rom = open(sys.argv[1], 'rb').read()
     
     msx = MSX()
-    msx.cpu.override_instruction(z80.disasm.instruction.CALL_nn)
-    msx.cpu.set_ram(bytes=rom, offset=0x4000)
-    #msx.cpu.PC = 0x4000
-    msx.cpu.PC = 0x404F
+    msx.cpu.load_instruction_set('z80.disasm.instruction')
     
-    if True:
-        for i in range(17):
-            msx.stepi()
-    sys.exit(42)
+    msx.cpu.set_ram(bytes=rom, offset=0x4000)
+    msx.cpu.PC = 0x4000
+    msx.mode = 'disasm'
+    #msx.cpu.PC = 0x404F
+    
+    while True:
+        msx.stepi()

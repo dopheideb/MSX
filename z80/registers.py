@@ -80,10 +80,10 @@ class Registers:
     
     @property
     def H(self: Self) -> int:
-        return self._AF.h
+        return self._HL.h
     @H.setter
     def H(self: Self, value: int) -> None:
-        self._AF.h = value
+        self._HL.h = value
     
     
     
@@ -99,10 +99,10 @@ class Registers:
     
     @property
     def L(self: Self) -> int:
-        return self._AF.l
+        return self._HL.l
     @L.setter
     def L(self: Self, value: int) -> None:
-        self._AF.l = value
+        self._HL.l = value
     
     
     
@@ -117,10 +117,24 @@ class Registers:
     
     
     def set_r_n(self: Self, r: int, n: int) -> None:
-        if r == 0b111:
-            self.A = n
-            return
-        raise ValueError
+        match r:
+            case 0b000:
+                self.B = n
+            case 0b001:
+                self.C = n
+            case 0b010:
+                self.D = n
+            case 0b011:
+                self.E = n
+            case 0b100:
+                self.H = n
+            case 0b101:
+                self.L = n
+            
+            case 0b111:
+                self.A = n
+            case _:
+                raise ValueError(f'register value {r:#05b} is not a known register.')
     
     def get_reg_dd(self: Self, dd: int) -> RegPair:
         if dd == 0b00:
