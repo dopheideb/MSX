@@ -1,6 +1,7 @@
 import abc
 import collections
 import logging
+import re
 import sys
 from   typing import Self, List, Type
 import z80.ram
@@ -84,6 +85,20 @@ _qq2n =\
 ## The Z80 has instruction classes in which the instruction can be used on a 
 ## fixed set of register pairs.
 ## 
+## Example: ADD IX, rr
+_rr2n =\
+{
+    0b00: 'BC',
+    0b01: 'DE',
+    0b10: 'IY',
+    0b11: 'SP',
+}
+
+
+
+## The Z80 has instruction classes in which the instruction can be used on a 
+## fixed set of register pairs.
+## 
 ## Example: INC ss
 ## 
 ## Note: exactly the same as dd...
@@ -93,6 +108,20 @@ _ss2n =\
     0b01: 'DE',
     0b10: 'HL',
     0b11: 'SP',
+}
+
+
+
+_t2p =\
+{
+    0b000: 0x00,
+    0b001: 0x08,
+    0b010: 0x10,
+    0b011: 0x18,
+    0b100: 0x20,
+    0b101: 0x28,
+    0b110: 0x30,
+    0b111: 0x38,
 }
 
 
@@ -138,21 +167,73 @@ class Instruction(abc.ABC):
     def dd2n(cls, dd: int) -> str:
         return _dd2n[dd]
     
+    @property
+    def ddn(self) -> str:
+        return _dd2n[self.dd]
+    
+    
+    
     @classmethod
     def pp2n(cls, pp: int) -> str:
         return _pp2n[pp]
+    
+    @property
+    def ppn(self: Self) -> str:
+        return _pp2n[self.pp]
+    
+    
     
     @classmethod
     def qq2n(cls, qq: int) -> str:
         return _qq2n[qq]
     
+    @property
+    def qqn(self) -> str:
+        return _qq2n[self.qq]
+    
+    
+    
     @classmethod
     def r2n(cls, r: int) -> str:
         return _r2n[r]
     
+    @property
+    def rn(self) -> str:
+        return _r2n[self.r]
+    
+    @property
+    def rprimen(self) -> str:
+        return _r2n[self.rprime]
+    
+    
+    
+    @classmethod
+    def rr2n(cls, rr: int) -> str:
+        return _rr2n[rr]
+    
+    @property
+    def rrn(self: Self) -> str:
+        return _rr2n[self.rr]
+    
+    
+    
     @classmethod
     def ss2n(cls, ss: int) -> str:
         return _ss2n[ss]
+    
+    @property
+    def ssn(self: Self) -> str:
+        return _ss2n[self.ss]
+    
+    
+    
+    @classmethod
+    def t2p(cls, t: int) -> str:
+        return _t2p[t]
+    
+    @property
+    def tp(self: Self) -> str:
+        return _t2p[self.t]
 
 
 
@@ -162,8 +243,10 @@ if __name__ == '__main__':
     dd = range(4)
     pp = range(4)
     qq = range(4)
+    rr = range(4)
     r = [ x for x in range(8) if x != 0b110 ]
     ss = range(4)
+    t = range(8)
     
     ## Instruction are in the same order as "Z80 CPU User Manual" (um0080.pdf)
     instructions =\
@@ -226,7 +309,7 @@ if __name__ == '__main__':
         {
             'opcodes': [ (0xDD00 | 0b01110_000 | (i << 0)) for i in r ],
             'size': 3,
-            'operands': [ 'r0', 'd' ],
+            'operands': [ 'd', 'r0' ],
         },
         
         ## Page 83
@@ -234,7 +317,7 @@ if __name__ == '__main__':
         {
             'opcodes': [ (0xFD00 | 0b01110_000 | (i << 0)) for i in r ],
             'size': 3,
-            'operands': [ 'r0', 'd' ],
+            'operands': [ 'd', 'r0' ],
         },
         
         ## Page 85
@@ -719,6 +802,48 @@ if __name__ == '__main__':
         
         
         
+        ## Page 153
+        "SUB r":\
+        {
+            'opcodes': [ (0b10010_000 | (i << 0)) for i in r ],
+            'size': 1,
+            'operands': [ 'r0' ],
+        },
+        
+        ## Page 153
+        "SUB n":\
+        {
+            'opcodes': [ 0xD6 ],
+            'size': 2,
+            'operands': [ 'n' ],
+        },
+        
+        ## Page 153
+        "SUB (HL)":\
+        {
+            'opcodes': [ 0x96 ],
+            'size': 1,
+            'operands': [],
+        },
+        
+        ## Page 153
+        "SUB (IX+d)":\
+        {
+            'opcodes': [ 0xDD96 ],
+            'size': 3,
+            'operands': [ 'd' ],
+        },
+        
+        ## Page 153
+        "SUB (IY+d)":\
+        {
+            'opcodes': [ 0xFD96 ],
+            'size': 3,
+            'operands': [ 'd' ],
+        },
+        
+        
+        
         ## Page 157
         "AND r":\
         {
@@ -762,12 +887,46 @@ if __name__ == '__main__':
         
         
         ## Page 159
-        "OR r'":\
+        "OR r":\
         {
             'opcodes': [ (0b10110_000 | (i << 0)) for i in r ],
             'size': 1,
-            'operands': [ 'rprime0' ],
+            'operands': [ 'r0' ],
         },
+        
+        ## Page 159
+        "OR n":\
+        {
+            'opcodes': [ 0xF6 ],
+            'size': 2,
+            'operands': [ 'n' ],
+        },
+        
+        ## Page 159
+        "OR (HL)":\
+        {
+            'opcodes': [ 0xB6 ],
+            'size': 1,
+            'operands': [],
+        },
+        
+        ## Page 159
+        "OR (IX+d)":\
+        {
+            'opcodes': [ 0xDDB6 ],
+            'size': 1,
+            'operands': [ 'd' ],
+        },
+        
+        ## Page 159
+        "OR (IY+d)":\
+        {
+            'opcodes': [ 0xFDB6 ],
+            'size': 1,
+            'operands': [ 'd' ],
+        },
+        
+        
         
         ## Page 161
         "XOR r'":\
@@ -926,6 +1085,14 @@ if __name__ == '__main__':
         ## General-Purpose Arithmetic and CPU Control Groups ##
         ##                                                   ##
         #######################################################
+        ## Page 173
+        "DAA":\
+        {
+            'opcodes': [ 0x27 ],
+            'size': 1,
+            'operands': [],
+        },
+        
         ## Page 175
         "CPL":\
         {
@@ -1021,11 +1188,27 @@ if __name__ == '__main__':
         ## 16-Bit Arithmetic Group ##
         ##                         ##
         #############################
-        ## Page 187
+        ## Page 188
         "ADD HL, ss":\
         {
             'opcodes': [ (0b00_00_1001 | (i << 4)) for i in ss ],
             'size': 1,
+            'operands': [ 'ss4' ],
+        },
+        
+        ## Page 190
+        "ADC HL, ss":\
+        {
+            'opcodes': [ (0xED00 | 0b01_00_1010 | (i << 4)) for i in ss ],
+            'size': 2,
+            'operands': [ 'ss4' ],
+        },
+        
+        ## Page 192
+        "SBC HL, ss":\
+        {
+            'opcodes': [ (0xED00 | 0b01_00_0010 | (i << 4)) for i in ss ],
+            'size': 2,
             'operands': [ 'ss4' ],
         },
         
@@ -1037,71 +1220,39 @@ if __name__ == '__main__':
             'operands': [ 'pp4' ],
         },
         
+        ## Page 194
+        "ADD IY, rr":\
+        {
+            'opcodes': [ (0xFD00 | 0b00_00_1001 | (i << 4)) for i in rr ],
+            'size': 1,
+            'operands': [ 'rr4' ],
+        },
+        
         ## Page 198
         "INC ss":\
         {
-            'opcodes': [ (0b00_00_0011 | (i << 4)) for i in ss],
+            'opcodes': [ (0b00_00_0011 | (i << 4)) for i in ss ],
             'size': 1,
             'operands': [ 'ss4' ],
         },
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        "BIT b, (HL)":\
+        ## Page 199
+        "INC IX":\
         {
-            'opcodes': [ (0xCB00 | 0b01_000_110 | (i << 3)) for i in b ],
+            'opcodes': [ 0xDD23 ],
             'size': 2,
-            'operands': [ 'b3' ],
+            'operands': [],
         },
         
-        "BIT b, (IX+d)":\
+        ## Page 200
+        "INC IY":\
         {
-            'opcodes': [ 0xDDCB ],
-            'size': 4,
-            'operands': [ 'd', 'b3' ],
-        },
-        
-        "BIT b, (IY+d)":\
-        {
-            'opcodes': [ 0xFDCB ],
-            'size': 4,
-            'operands': [ 'd', 'b3' ],
-        },
-        
-        "BIT b, r":\
-        {
-            'opcodes': [ (0xCB00 | 0b01_000_000 | (j << 3) | (i << 0)) for j in b for i in r ],
+            'opcodes': [ 0xFD23 ],
             'size': 2,
-            'operands': [ 'b3', 'r0' ],
+            'operands': [],
         },
         
-        "CALL cc, nn":\
-        {
-            'opcodes': [ (0b11_000_100 | (i << 3)) for i in r],
-            'size': 3,
-            'operands': [ 'nn' ],
-        },
-        
-        "CALL nn":\
-        {
-            'opcodes': [ 0xCD ],
-            'size': 3,
-            'operands': [ 'nn' ],
-        },
-        
-        
+        ## Page 201
         "DEC ss":\
         {
             'opcodes': [ (0b00_00_1011 | (i << 4)) for i in ss ],
@@ -1109,6 +1260,369 @@ if __name__ == '__main__':
             'operands': [ 'ss4' ],
         },
         
+        ## Page 202
+        "DEC IX":\
+        {
+            'opcodes': [ 0xDD2B ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 203
+        "DEC IY":\
+        {
+            'opcodes': [ 0xFD2B ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        
+        
+        ############################
+        ##                        ##
+        ## Rotate and Shift Group ##
+        ##                        ##
+        ############################
+        ## Page 205
+        "RLCA":\
+        {
+            'opcodes': [ 0x07 ],
+            'size': 1,
+            'operands': [],
+        },
+        
+        ## Page 207
+        "RLA":\
+        {
+            'opcodes': [ 0x17 ],
+            'size': 1,
+            'operands': [],
+        },
+        
+        ## Page 209
+        "RRCA":\
+        {
+            'opcodes': [ 0x0F ],
+            'size': 1,
+            'operands': [],
+        },
+        
+        ## Page 211
+        "RRA":\
+        {
+            'opcodes': [ 0x1F ],
+            'size': 1,
+            'operands': [],
+        },
+        
+        ## Page 213
+        "RLC r":\
+        {
+            #'opcodes': [ (0xCB00 | 0b0000_000 | (i << 0)) for i in r ],
+            'opcodes': [ (0xCB00 | 0b0000_000 | (i << 0)) for i in r ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 215
+        "RLC (HL)":\
+        {
+            'opcodes': [ 0xCB06 ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 217
+        "RLC (IX+d)":\
+        {
+            'opcodes': [ 0xDDCB06 ],
+            'size': 4,
+            'operands': [ 'd' ],
+        },
+        
+        
+        
+        ## Page 221
+        "RL r":\
+        {
+            'opcodes': [ (0xCB00 | 0b00010_000 | (i << 0)) for i in r ],
+            'size': 2,
+            'operands': [ 'r0' ],
+        },
+        
+        ## Page 221
+        "RL (HL)":\
+        {
+            'opcodes': [ 0xCB16 ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 221
+        "RL (IX+d)":\
+        {
+            'opcodes': [ 0xDDCB16 ],
+            'size': 4,
+            'operands': [ 'd' ],
+        },
+        
+        ## Page 221
+        "RL (IY+d)":\
+        {
+            'opcodes': [ 0xFDCB16 ],
+            'size': 4,
+            'operands': [ 'd' ],
+        },
+        
+        
+        
+        ## Page 227
+        "RR r":\
+        {
+            ## Wrong opcode in um0080.pdf!!!
+            #'opcodes': [ (0xCB00 | 0b00001_000 | (i << 0)) for i in r ],
+            'opcodes': [ (0xCB00 | 0b00011_000 | (i << 0)) for i in r ],
+            'size': 2,
+            'operands': [ 'r0' ],
+        },
+        
+        ## Page 227
+        "RR (HL)":\
+        {
+            'opcodes': [ 0xCB1E ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 227
+        "RR (IX+d)":\
+        {
+            'opcodes': [ 0xDDCB1E ],
+            'size': 4,
+            'operands': [ 'd' ],
+        },
+        
+        ## Page 227
+        "RR (IY+d)":\
+        {
+            'opcodes': [ 0xFDCB1E ],
+            'size': 4,
+            'operands': [ 'd' ],
+        },
+        
+        
+        
+        ## Page 230
+        "SLA r":\
+        {
+            'opcodes': [ (0xCB00 | 0b00100_000 | (i << 0)) for i in r ],
+            'size': 2,
+            'operands': [ 'r0' ],
+        },
+        
+        ## Page 230
+        "SLA (HL)":\
+        {
+            'opcodes': [ 0xCB26 ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 230
+        "SLA (IX+d)":\
+        {
+            'opcodes': [ 0xDDCB26 ],
+            'size': 4,
+            'operands': [ 'd' ],
+        },
+        
+        ## Page 230
+        "SLA (IY+d)":\
+        {
+            'opcodes': [ 0xFDCB26 ],
+            'size': 4,
+            'operands': [ 'd' ],
+        },
+        
+        
+        
+        ## Page 236
+        "SRL r":\
+        {
+            'opcodes': [ (0xCB00 | 0b00111_000 | (i << 0)) for i in r ],
+            'size': 2,
+            'operands': [ 'r0' ],
+        },
+        
+        ## Page 236
+        "SRL (HL)":\
+        {
+            'opcodes': [ 0xCB3E ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 236
+        "SRL (IX+d)":\
+        {
+            'opcodes': [ 0xDDCB3E ],
+            'size': 4,
+            'operands': [ 'd' ],
+        },
+        
+        ## Page 236
+        "SRL (IY+d)":\
+        {
+            'opcodes': [ 0xFDCB3E ],
+            'size': 4,
+            'operands': [ 'd' ],
+        },
+        
+        
+        
+        ####################################
+        ##                                ##
+        ## Bit Set, Reset, and Test Group ##
+        ##                                ##
+        ####################################
+        ## Page 243
+        "BIT b, r":\
+        {
+            'opcodes': [ (0xCB00 | 0b01_000_000 | (j << 3) | (i << 0)) for j in b for i in r ],
+            'size': 2,
+            'operands': [ 'b3', 'r0' ],
+        },
+        
+        ## Page 245
+        "BIT b, (HL)":\
+        {
+            'opcodes': [ (0xCB00 | 0b01_000_110 | (i << 3)) for i in b ],
+            'size': 2,
+            'operands': [ 'b3' ],
+        },
+        
+        ## Page 247
+        "BIT b, (IX+d)":\
+        {
+            'opcodes': [ (0xDDCB00 | 0b01_000_110 | (i << 3)) for i in b ],
+            'size': 4,
+            'operands': [ 'b3', 'd' ],
+        },
+        
+        ## Page 249
+        "BIT b, (IY+d)":\
+        {
+            'opcodes': [ (0xFDCB00 | 0b01_000_110 | (i << 3)) for i in b ],
+            'size': 4,
+            'operands': [ 'b3', 'd' ],
+        },
+        
+        
+        
+        ## Page 251
+        "SET b, r":\
+        {
+            'opcodes': [ (0xCB00 | 0b11_000_000 | (j << 3) | (i << 0)) for j in b for i in r ],
+            'size': 2,
+            'operands': [ 'b3', 'r0' ],
+        },
+        
+        ## Page 253
+        "SET b, (HL)":\
+        {
+            'opcodes': [ (0xCB00 | 0b11_000_110 | (i << 3)) for i in b ],
+            'size': 2,
+            'operands': [ 'b3' ],
+        },
+        
+        ## Page 255
+        "SET b, (IX+d)":\
+        {
+            'opcodes': [ (0xDDCB00 | 0b11_000_110 | (i << 3)) for i in b ],
+            'size': 4,
+            'operands': [ 'b3', 'd' ],
+        },
+        
+        ## Page 257
+        "SET b, (IY+d)":\
+        {
+            'opcodes': [ (0xFDCB00 | 0b11_000_110 | (i << 3)) for i in b ],
+            'size': 4,
+            'operands': [ 'b3', 'd' ],
+        },
+        
+        
+        
+        ################
+        ##            ##
+        ## Jump Group ##
+        ##            ##
+        ################
+        ## Page 262
+        "JP nn":\
+        {
+            'opcodes': [ 0xC3 ],
+            'size': 3,
+            'operands': [ 'nn' ],
+        },
+        
+        ## Page 263
+        "JP cc, nn":\
+        {
+            'opcodes': [ (0b11_000_010 | (i << 3)) for i in cc ],
+            'size': 3,
+            'operands': [ 'cc3', 'nn' ],
+        },
+        
+        ## Page 265
+        "JR e":\
+        {
+            'opcodes': [ 0x18 ],
+            'size': 2,
+            'operands': [ 'e' ],
+        },
+        
+        ## Page 267
+        "JR C, e":\
+        {
+            'opcodes': [ 0x38 ],
+            'size': 2,
+            'operands': [ 'e' ],
+        },
+        
+        ## Page 269
+        "JR NC, e":\
+        {
+            'opcodes': [ 0x30 ],
+            'size': 2,
+            'operands': [ 'e' ],
+        },
+        
+        ## Page 271
+        "JR Z, e":\
+        {
+            'opcodes': [ 0x28 ],
+            'size': 2,
+            'operands': [ 'e' ],
+        },
+        
+        ## Page 273
+        "JR NZ, e":\
+        {
+            'opcodes': [ 0x20 ],
+            'size': 2,
+            'operands': [ 'e' ],
+        },
+        
+        ## Page 275
+        "JP (HL)":\
+        {
+            'opcodes': [ 0xE9 ],
+            'size': 1,
+            'operands': [],
+        },
+        
+        ## Page 278
         "DJNZ, e":\
         {
             'opcodes': [ 0x10 ],
@@ -1117,69 +1631,29 @@ if __name__ == '__main__':
         },
         
         
-        "JP cc, nn":\
-        {
-            'opcodes': [ (0b11_000_010 | (i << 3)) for i in cc ],
-            'size': 3,
-            'operands': [ 'cc3', 'nn' ],
-        },
         
-        "JP (HL)":\
+        ###########################
+        ##                       ##
+        ## Call and Return Group ##
+        ##                       ##
+        ###########################
+        ## Page 281
+        "CALL nn":\
         {
-            'opcodes': [ 0xE9 ],
-            'size': 1,
-            'operands': [],
-        },
-        
-        "JP nn":\
-        {
-            'opcodes': [ 0xC3 ],
+            'opcodes': [ 0xCD ],
             'size': 3,
             'operands': [ 'nn' ],
         },
         
-        "JR C, e":\
+        ## Page 283
+        "CALL cc, nn":\
         {
-            'opcodes': [ 0x38 ],
-            'size': 2,
-            'operands': [ 'e' ],
-        },
-        
-        "JR e":\
-        {
-            'opcodes': [ 0x18 ],
-            'size': 2,
-            'operands': [ 'e' ],
-        },
-        
-        "JR NC, e":\
-        {
-            'opcodes': [ 0x30 ],
-            'size': 2,
-            'operands': [ 'e' ],
-        },
-        
-        "JR NZ, e":\
-        {
-            'opcodes': [ 0x20 ],
-            'size': 2,
-            'operands': [ 'e' ],
-        },
-        
-        "JR Z, e":\
-        {
-            'opcodes': [ 0x28 ],
-            'size': 2,
-            'operands': [ 'e' ],
-        },
-        
-        "LD (IX), nn":\
-        {
-            'opcodes': [ 0xDD21 ],
-            'size': 4,
+            'opcodes': [ (0b11_000_100 | (i << 3)) for i in r],
+            'size': 3,
             'operands': [ 'nn' ],
         },
         
+        ## Page 285
         "RET":\
         {
             'opcodes': [ 0xC9 ],
@@ -1187,6 +1661,7 @@ if __name__ == '__main__':
             'operands': [],
         },
         
+        ## Page 286
         "RET cc":\
         {
             'opcodes': [ (0b11_000_000 | (i << 3)) for i in cc ],
@@ -1194,20 +1669,132 @@ if __name__ == '__main__':
             'operands': [ 'cc3' ],
         },
         
-        "RLCA":\
+        ## Page 288
+        "RETI":\
         {
-            'opcodes': [ 0x07 ],
-            'size': 1,
+            'opcodes': [ 0xED4D ],
+            'size': 2,
             'operands': [],
         },
         
-        "RRA":\
+        ## Page 290
+        "RETN":\
         {
-            'opcodes': [ 0x1F ],
-            'size': 1,
+            'opcodes': [ 0xED45 ],
+            'size': 2,
             'operands': [],
         },
         
+        ## Page 292
+        "RST p":\
+        {
+            'opcodes': [ (0b11_000_111 | (i << 3)) for i in t ],
+            'size': 1,
+            'operands': [ 't3' ],
+        },
+        
+        
+        
+        ############################
+        ##                        ##
+        ## Input and Output Group ##
+        ##                        ##
+        ############################
+        ## Page 295
+        "IN A, (n)":\
+        {
+            'opcodes': [ 0xDB ],
+            'size': 2,
+            'operands': [ 'n' ],
+        },
+        
+        ## Page 296
+        "IN r, (C)":\
+        {
+            'opcodes': [ (0xED00 | 0b01_000_000 | (i << 3)) for i in r ],
+            'size': 2,
+            'operands': [ 'r3' ],
+        },
+        
+        ## Page 298
+        "INI":\
+        {
+            'opcodes': [ 0xEDA2 ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 300
+        "INIR":\
+        {
+            'opcodes': [ 0xEDB2 ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 302
+        "IND":\
+        {
+            'opcodes': [ 0xEDAA ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 304
+        "INDR":\
+        {
+            'opcodes': [ 0xEDBA ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 306
+        "OUT (n), A":\
+        {
+            'opcodes': [ 0xD3 ],
+            'size': 2,
+            'operands': [ 'n' ],
+        },
+        
+        ## Page 307
+        "OUT (C), r":\
+        {
+            'opcodes': [ (0xED00 | 0b01_000_001 | (i << 3)) for i in r ],
+            'size': 2,
+            'operands': [ 'r3' ],
+        },
+        
+        ## Page 309
+        "OUTI":\
+        {
+            'opcodes': [ 0xEDA3 ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 311
+        "OTIR":\
+        {
+            'opcodes': [ 0xEDB3 ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 313
+        "OUTD":\
+        {
+            'opcodes': [ 0xEDAB ],
+            'size': 2,
+            'operands': [],
+        },
+        
+        ## Page 315
+        "OTDR":\
+        {
+            'opcodes': [ 0xEDBB ],
+            'size': 2,
+            'operands': [],
+        },
     }
     
     output = ''
@@ -1217,6 +1804,13 @@ if __name__ == '__main__':
         set_variables = []
         str_args = []
         for operand in instr['operands']:
+            first_arg_offset = 1
+            if instr['opcodes'][0] > 0xFF:
+                ## Note: instruction with a 3 byte opcode, are not special here, 
+                ## since the argument comes in between the leading 2 opcode and 
+                ## the trailing 1 byte opcode.
+                first_arg_offset = 2
+            
             if operand == 'b3':
                 set_variables.append(f'self.b = (opcode >> 3) & 0x07')
                 str_args.append('b={self.b}')
@@ -1230,13 +1824,13 @@ if __name__ == '__main__':
                 set_variables.append(f'self.dd = (opcode >> 4) & 0x03')
                 str_args.append('dd={self.dd2n(self.dd)}')
             elif operand == 'e':
-                set_variables.append(f'self.e  = self._ram.get_byte(self.PC + 1, signed=True)')
+                set_variables.append(f'self.e  = self._ram.get_byte(self.PC + {first_arg_offset}, signed=True)')
                 str_args.append('e={self.e:02X}h')
             elif operand == 'n':
-                set_variables.append(f'self.n = self._ram.get_byte(self.PC + 1, signed=False)')
+                set_variables.append(f'self.n = self._ram.get_byte(self.PC + {first_arg_offset}, signed=False)')
                 str_args.append('n={self.n:02X}h')
             elif operand == 'nn':
-                set_variables.append(f'self.nn = self._ram.get_word(self.PC + 1)')
+                set_variables.append(f'self.nn = self._ram.get_word(self.PC + {first_arg_offset})')
                 str_args.append('nn={self.nn:04X}h')
             elif operand == 'pp4':
                 set_variables.append(f'self.pp = (opcode >> 4) & 0x03')
@@ -1253,6 +1847,12 @@ if __name__ == '__main__':
             elif operand == 'rprime0':
                 set_variables.append(f'self.rprime = (opcode >> 0) & 0x07')
                 str_args.append("r'={self.r2n(self.rprime)}")
+            elif operand == 'rr4':
+                set_variables.append(f'self.rr = (opcode >> 4) & 0x03')
+                str_args.append('rr={self.rr2n(self.rr)}')
+            elif operand == 't3':
+                set_variables.append(f'self.t = (opcode >> 3) & 0x07')
+                str_args.append('t={self.t}, p={self.t2p(self.t):02X}h')
             elif operand == 'ss4':
                 set_variables.append(f'self.ss = (opcode >> 4) & 0x03')
                 str_args.append('ss={self.ss2n(self.ss)}')
@@ -1284,4 +1884,9 @@ if __name__ == '__main__':
         if len(set_variables) > 0:
             output += '        '
             output += '\n        '.join(set_variables) + '\n'
+        if re.search(pattern=' e$', string=instr_name, flags=0):
+            output += '\n'
+            output += '    @property\n'
+            output += '    def jump_destination(self: Self) -> int:\n'
+            output += '        return self.PC + self.size + self.e\n'
     print(output)

@@ -112,11 +112,11 @@ class LD_deref_IX_plus_d_r(z80.instruction.Instruction):
     def size(self: Self) -> int:
         return 3
     def __str__(self: Self) -> str:
-        return f"LD (IX+d), r; r={self.r2n(self.r)}, d={self.d:02X}h"
+        return f"LD (IX+d), r; d={self.d:02X}h, r={self.r2n(self.r)}"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.r = (opcode >> 0) & 0x07
         self.d = self._ram.get_byte(self.PC + 2, signed=False)
+        self.r = (opcode >> 0) & 0x07
 
 class LD_deref_IY_plus_d_r(z80.instruction.Instruction):
     @classmethod
@@ -129,11 +129,11 @@ class LD_deref_IY_plus_d_r(z80.instruction.Instruction):
     def size(self: Self) -> int:
         return 3
     def __str__(self: Self) -> str:
-        return f"LD (IY+d), r; r={self.r2n(self.r)}, d={self.d:02X}h"
+        return f"LD (IY+d), r; d={self.d:02X}h, r={self.r2n(self.r)}"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.r = (opcode >> 0) & 0x07
         self.d = self._ram.get_byte(self.PC + 2, signed=False)
+        self.r = (opcode >> 0) & 0x07
 
 class LD_deref_HL_n(z80.instruction.Instruction):
     @classmethod
@@ -166,7 +166,7 @@ class LD_deref_IX_plus_d_n(z80.instruction.Instruction):
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
         self.d = self._ram.get_byte(self.PC + 2, signed=False)
-        self.n = self._ram.get_byte(self.PC + 1, signed=False)
+        self.n = self._ram.get_byte(self.PC + 2, signed=False)
 
 class LD_deref_IY_plus_d_n(z80.instruction.Instruction):
     @classmethod
@@ -183,7 +183,7 @@ class LD_deref_IY_plus_d_n(z80.instruction.Instruction):
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
         self.d = self._ram.get_byte(self.PC + 2, signed=False)
-        self.n = self._ram.get_byte(self.PC + 1, signed=False)
+        self.n = self._ram.get_byte(self.PC + 2, signed=False)
 
 class LD_A_deref_BC(z80.instruction.Instruction):
     @classmethod
@@ -368,7 +368,7 @@ class LD_IX_nn(z80.instruction.Instruction):
         return f"LD IX, nn; nn={self.nn:04X}h"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.nn = self._ram.get_word(self.PC + 1)
+        self.nn = self._ram.get_word(self.PC + 2)
 
 class LD_IY_nn(z80.instruction.Instruction):
     @classmethod
@@ -384,7 +384,7 @@ class LD_IY_nn(z80.instruction.Instruction):
         return f"LD IY, nn; nn={self.nn:04X}h"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.nn = self._ram.get_word(self.PC + 1)
+        self.nn = self._ram.get_word(self.PC + 2)
 
 class LD_HL_deref_nn(z80.instruction.Instruction):
     @classmethod
@@ -417,7 +417,7 @@ class LD_dd_deref_nn(z80.instruction.Instruction):
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
         self.dd = (opcode >> 4) & 0x03
-        self.nn = self._ram.get_word(self.PC + 1)
+        self.nn = self._ram.get_word(self.PC + 2)
 
 class LD_IX_deref_nn(z80.instruction.Instruction):
     @classmethod
@@ -433,7 +433,7 @@ class LD_IX_deref_nn(z80.instruction.Instruction):
         return f"LD IX, (nn); nn={self.nn:04X}h"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.nn = self._ram.get_word(self.PC + 1)
+        self.nn = self._ram.get_word(self.PC + 2)
 
 class LD_IY_deref_nn(z80.instruction.Instruction):
     @classmethod
@@ -449,7 +449,7 @@ class LD_IY_deref_nn(z80.instruction.Instruction):
         return f"LD IY, (nn); nn={self.nn:04X}h"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.nn = self._ram.get_word(self.PC + 1)
+        self.nn = self._ram.get_word(self.PC + 2)
 
 class LD_deref_nn_HL(z80.instruction.Instruction):
     @classmethod
@@ -481,7 +481,7 @@ class LD_deref_nn_dd(z80.instruction.Instruction):
         return f"LD (nn), dd; nn={self.nn:04X}h"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.nn = self._ram.get_word(self.PC + 1)
+        self.nn = self._ram.get_word(self.PC + 2)
 
 class LD_deref_nn_IX(z80.instruction.Instruction):
     @classmethod
@@ -497,7 +497,7 @@ class LD_deref_nn_IX(z80.instruction.Instruction):
         return f"LD (nn), IX; nn={self.nn:04X}h"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.nn = self._ram.get_word(self.PC + 1)
+        self.nn = self._ram.get_word(self.PC + 2)
 
 class LD_SP_HL(z80.instruction.Instruction):
     @classmethod
@@ -1003,6 +1003,85 @@ class ADC_A_deref_IY_plus_d(z80.instruction.Instruction):
         super().__init__(registers, ram, opcode)
         self.d = self._ram.get_byte(self.PC + 2, signed=False)
 
+class SUB_r(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SUB r"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x97]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"SUB r; r={self.r2n(self.r)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.r = (opcode >> 0) & 0x07
+
+class SUB_n(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SUB n"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xD6]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"SUB n; n={self.n:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.n = self._ram.get_byte(self.PC + 1, signed=False)
+
+class SUB_deref_HL(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SUB (HL)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0x96]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"SUB (HL);"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class SUB_deref_IX_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SUB (IX+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDD96]
+    @property
+    def size(self: Self) -> int:
+        return 3
+    def __str__(self: Self) -> str:
+        return f"SUB (IX+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class SUB_deref_IY_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SUB (IY+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xFD96]
+    @property
+    def size(self: Self) -> int:
+        return 3
+    def __str__(self: Self) -> str:
+        return f"SUB (IY+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
 class AND_r(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
@@ -1081,10 +1160,10 @@ class AND_deref_IY_plus_d(z80.instruction.Instruction):
         super().__init__(registers, ram, opcode)
         self.d = self._ram.get_byte(self.PC + 2, signed=False)
 
-class OR_rprime(z80.instruction.Instruction):
+class OR_r(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
-        return "OR r'"
+        return "OR r"
     @classmethod
     def opcodes(self: Self) -> List[int]:
         return [0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB7]
@@ -1092,10 +1171,73 @@ class OR_rprime(z80.instruction.Instruction):
     def size(self: Self) -> int:
         return 1
     def __str__(self: Self) -> str:
-        return f"OR r'; r'={self.r2n(self.rprime)}"
+        return f"OR r; r={self.r2n(self.r)}"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.rprime = (opcode >> 0) & 0x07
+        self.r = (opcode >> 0) & 0x07
+
+class OR_n(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "OR n"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xF6]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"OR n; n={self.n:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.n = self._ram.get_byte(self.PC + 1, signed=False)
+
+class OR_deref_HL(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "OR (HL)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xB6]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"OR (HL);"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class OR_deref_IX_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "OR (IX+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDDB6]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"OR (IX+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class OR_deref_IY_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "OR (IY+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xFDB6]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"OR (IY+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
 
 class XOR_rprime(z80.instruction.Instruction):
     @classmethod
@@ -1381,6 +1523,21 @@ class DEC_deref_IY_plus_d(z80.instruction.Instruction):
         super().__init__(registers, ram, opcode)
         self.d = self._ram.get_byte(self.PC + 2, signed=False)
 
+class DAA(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "DAA"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0x27]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"DAA;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
 class CPL(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
@@ -1562,6 +1719,38 @@ class ADD_HL_ss(z80.instruction.Instruction):
         super().__init__(registers, ram, opcode)
         self.ss = (opcode >> 4) & 0x03
 
+class ADC_HL_ss(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "ADC HL, ss"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xED4A, 0xED5A, 0xED6A, 0xED7A]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"ADC HL, ss; ss={self.ss2n(self.ss)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.ss = (opcode >> 4) & 0x03
+
+class SBC_HL_ss(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SBC HL, ss"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xED42, 0xED52, 0xED62, 0xED72]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"SBC HL, ss; ss={self.ss2n(self.ss)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.ss = (opcode >> 4) & 0x03
+
 class ADD_IX_pp(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
@@ -1578,6 +1767,22 @@ class ADD_IX_pp(z80.instruction.Instruction):
         super().__init__(registers, ram, opcode)
         self.pp = (opcode >> 4) & 0x03
 
+class ADD_IY_rr(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "ADD IY, rr"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xFD09, 0xFD19, 0xFD29, 0xFD39]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"ADD IY, rr; rr={self.rr2n(self.rr)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.rr = (opcode >> 4) & 0x03
+
 class INC_ss(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
@@ -1593,6 +1798,457 @@ class INC_ss(z80.instruction.Instruction):
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
         self.ss = (opcode >> 4) & 0x03
+
+class INC_IX(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "INC IX"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDD23]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"INC IX;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class INC_IY(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "INC IY"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xFD23]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"INC IY;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class DEC_ss(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "DEC ss"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0x0B, 0x1B, 0x2B, 0x3B]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"DEC ss; ss={self.ss2n(self.ss)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.ss = (opcode >> 4) & 0x03
+
+class DEC_IX(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "DEC IX"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDD2B]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"DEC IX;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class DEC_IY(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "DEC IY"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xFD2B]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"DEC IY;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class RLCA(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RLCA"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0x07]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"RLCA;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class RLA(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RLA"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0x17]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"RLA;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class RRCA(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RRCA"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0x0F]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"RRCA;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class RRA(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RRA"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0x1F]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"RRA;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class RLC_r(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RLC r"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB00, 0xCB01, 0xCB02, 0xCB03, 0xCB04, 0xCB05, 0xCB07]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"RLC r;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class RLC_deref_HL(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RLC (HL)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB06]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"RLC (HL);"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class RLC_deref_IX_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RLC (IX+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDDCB06]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"RLC (IX+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class RL_r(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RL r"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB10, 0xCB11, 0xCB12, 0xCB13, 0xCB14, 0xCB15, 0xCB17]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"RL r; r={self.r2n(self.r)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.r = (opcode >> 0) & 0x07
+
+class RL_deref_HL(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RL (HL)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB16]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"RL (HL);"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class RL_deref_IX_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RL (IX+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDDCB16]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"RL (IX+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class RL_deref_IY_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RL (IY+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xFDCB16]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"RL (IY+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class RR_r(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RR r"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB18, 0xCB19, 0xCB1A, 0xCB1B, 0xCB1C, 0xCB1D, 0xCB1F]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"RR r; r={self.r2n(self.r)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.r = (opcode >> 0) & 0x07
+
+class RR_deref_HL(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RR (HL)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB1E]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"RR (HL);"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class RR_deref_IX_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RR (IX+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDDCB1E]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"RR (IX+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class RR_deref_IY_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RR (IY+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xFDCB1E]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"RR (IY+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class SLA_r(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SLA r"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB20, 0xCB21, 0xCB22, 0xCB23, 0xCB24, 0xCB25, 0xCB27]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"SLA r; r={self.r2n(self.r)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.r = (opcode >> 0) & 0x07
+
+class SLA_deref_HL(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SLA (HL)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB26]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"SLA (HL);"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class SLA_deref_IX_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SLA (IX+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDDCB26]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"SLA (IX+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class SLA_deref_IY_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SLA (IY+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xFDCB26]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"SLA (IY+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class SRL_r(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SRL r"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB38, 0xCB39, 0xCB3A, 0xCB3B, 0xCB3C, 0xCB3D, 0xCB3F]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"SRL r; r={self.r2n(self.r)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.r = (opcode >> 0) & 0x07
+
+class SRL_deref_HL(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SRL (HL)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB3E]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"SRL (HL);"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class SRL_deref_IX_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SRL (IX+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDDCB3E]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"SRL (IX+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class SRL_deref_IY_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SRL (IY+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xFDCB3E]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"SRL (IY+d); d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class BIT_b_r(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "BIT b, r"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCB40, 0xCB41, 0xCB42, 0xCB43, 0xCB44, 0xCB45, 0xCB47, 0xCB48, 0xCB49, 0xCB4A, 0xCB4B, 0xCB4C, 0xCB4D, 0xCB4F, 0xCB50, 0xCB51, 0xCB52, 0xCB53, 0xCB54, 0xCB55, 0xCB57, 0xCB58, 0xCB59, 0xCB5A, 0xCB5B, 0xCB5C, 0xCB5D, 0xCB5F, 0xCB60, 0xCB61, 0xCB62, 0xCB63, 0xCB64, 0xCB65, 0xCB67, 0xCB68, 0xCB69, 0xCB6A, 0xCB6B, 0xCB6C, 0xCB6D, 0xCB6F, 0xCB70, 0xCB71, 0xCB72, 0xCB73, 0xCB74, 0xCB75, 0xCB77, 0xCB78, 0xCB79, 0xCB7A, 0xCB7B, 0xCB7C, 0xCB7D, 0xCB7F]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"BIT b, r; b={self.b}, r={self.r2n(self.r)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.b = (opcode >> 3) & 0x07
+        self.r = (opcode >> 0) & 0x07
 
 class BIT_b_deref_HL(z80.instruction.Instruction):
     @classmethod
@@ -1616,16 +2272,16 @@ class BIT_b_deref_IX_plus_d(z80.instruction.Instruction):
         return "BIT b, (IX+d)"
     @classmethod
     def opcodes(self: Self) -> List[int]:
-        return [0xDDCB]
+        return [0xDDCB46, 0xDDCB4E, 0xDDCB56, 0xDDCB5E, 0xDDCB66, 0xDDCB6E, 0xDDCB76, 0xDDCB7E]
     @property
     def size(self: Self) -> int:
         return 4
     def __str__(self: Self) -> str:
-        return f"BIT b, (IX+d); d={self.d:02X}h, b={self.b}"
+        return f"BIT b, (IX+d); b={self.b}, d={self.d:02X}h"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.d = self._ram.get_byte(self.PC + 2, signed=False)
         self.b = (opcode >> 3) & 0x07
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
 
 class BIT_b_deref_IY_plus_d(z80.instruction.Instruction):
     @classmethod
@@ -1633,97 +2289,99 @@ class BIT_b_deref_IY_plus_d(z80.instruction.Instruction):
         return "BIT b, (IY+d)"
     @classmethod
     def opcodes(self: Self) -> List[int]:
-        return [0xFDCB]
+        return [0xFDCB46, 0xFDCB4E, 0xFDCB56, 0xFDCB5E, 0xFDCB66, 0xFDCB6E, 0xFDCB76, 0xFDCB7E]
     @property
     def size(self: Self) -> int:
         return 4
     def __str__(self: Self) -> str:
-        return f"BIT b, (IY+d); d={self.d:02X}h, b={self.b}"
+        return f"BIT b, (IY+d); b={self.b}, d={self.d:02X}h"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.d = self._ram.get_byte(self.PC + 2, signed=False)
         self.b = (opcode >> 3) & 0x07
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
 
-class BIT_b_r(z80.instruction.Instruction):
+class SET_b_r(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
-        return "BIT b, r"
+        return "SET b, r"
     @classmethod
     def opcodes(self: Self) -> List[int]:
-        return [0xCB40, 0xCB41, 0xCB42, 0xCB43, 0xCB44, 0xCB45, 0xCB47, 0xCB48, 0xCB49, 0xCB4A, 0xCB4B, 0xCB4C, 0xCB4D, 0xCB4F, 0xCB50, 0xCB51, 0xCB52, 0xCB53, 0xCB54, 0xCB55, 0xCB57, 0xCB58, 0xCB59, 0xCB5A, 0xCB5B, 0xCB5C, 0xCB5D, 0xCB5F, 0xCB60, 0xCB61, 0xCB62, 0xCB63, 0xCB64, 0xCB65, 0xCB67, 0xCB68, 0xCB69, 0xCB6A, 0xCB6B, 0xCB6C, 0xCB6D, 0xCB6F, 0xCB70, 0xCB71, 0xCB72, 0xCB73, 0xCB74, 0xCB75, 0xCB77, 0xCB78, 0xCB79, 0xCB7A, 0xCB7B, 0xCB7C, 0xCB7D, 0xCB7F]
+        return [0xCBC0, 0xCBC1, 0xCBC2, 0xCBC3, 0xCBC4, 0xCBC5, 0xCBC7, 0xCBC8, 0xCBC9, 0xCBCA, 0xCBCB, 0xCBCC, 0xCBCD, 0xCBCF, 0xCBD0, 0xCBD1, 0xCBD2, 0xCBD3, 0xCBD4, 0xCBD5, 0xCBD7, 0xCBD8, 0xCBD9, 0xCBDA, 0xCBDB, 0xCBDC, 0xCBDD, 0xCBDF, 0xCBE0, 0xCBE1, 0xCBE2, 0xCBE3, 0xCBE4, 0xCBE5, 0xCBE7, 0xCBE8, 0xCBE9, 0xCBEA, 0xCBEB, 0xCBEC, 0xCBED, 0xCBEF, 0xCBF0, 0xCBF1, 0xCBF2, 0xCBF3, 0xCBF4, 0xCBF5, 0xCBF7, 0xCBF8, 0xCBF9, 0xCBFA, 0xCBFB, 0xCBFC, 0xCBFD, 0xCBFF]
     @property
     def size(self: Self) -> int:
         return 2
     def __str__(self: Self) -> str:
-        return f"BIT b, r; b={self.b}, r={self.r2n(self.r)}"
+        return f"SET b, r; b={self.b}, r={self.r2n(self.r)}"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
         self.b = (opcode >> 3) & 0x07
         self.r = (opcode >> 0) & 0x07
 
-class CALL_cc_nn(z80.instruction.Instruction):
+class SET_b_deref_HL(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
-        return "CALL cc, nn"
+        return "SET b, (HL)"
     @classmethod
     def opcodes(self: Self) -> List[int]:
-        return [0xC4, 0xCC, 0xD4, 0xDC, 0xE4, 0xEC, 0xFC]
-    @property
-    def size(self: Self) -> int:
-        return 3
-    def __str__(self: Self) -> str:
-        return f"CALL cc, nn; nn={self.nn:04X}h"
-    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
-        super().__init__(registers, ram, opcode)
-        self.nn = self._ram.get_word(self.PC + 1)
-
-class CALL_nn(z80.instruction.Instruction):
-    @classmethod
-    def name(cls) -> str:
-        return "CALL nn"
-    @classmethod
-    def opcodes(self: Self) -> List[int]:
-        return [0xCD]
-    @property
-    def size(self: Self) -> int:
-        return 3
-    def __str__(self: Self) -> str:
-        return f"CALL nn; nn={self.nn:04X}h"
-    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
-        super().__init__(registers, ram, opcode)
-        self.nn = self._ram.get_word(self.PC + 1)
-
-class DEC_ss(z80.instruction.Instruction):
-    @classmethod
-    def name(cls) -> str:
-        return "DEC ss"
-    @classmethod
-    def opcodes(self: Self) -> List[int]:
-        return [0x0B, 0x1B, 0x2B, 0x3B]
-    @property
-    def size(self: Self) -> int:
-        return 1
-    def __str__(self: Self) -> str:
-        return f"DEC ss; ss={self.ss2n(self.ss)}"
-    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
-        super().__init__(registers, ram, opcode)
-        self.ss = (opcode >> 4) & 0x03
-
-class DJNZ_e(z80.instruction.Instruction):
-    @classmethod
-    def name(cls) -> str:
-        return "DJNZ, e"
-    @classmethod
-    def opcodes(self: Self) -> List[int]:
-        return [0x10]
+        return [0xCBC6, 0xCBCE, 0xCBD6, 0xCBDE, 0xCBE6, 0xCBEE, 0xCBF6, 0xCBFE]
     @property
     def size(self: Self) -> int:
         return 2
     def __str__(self: Self) -> str:
-        return f"DJNZ, e; e={self.e:02X}h"
+        return f"SET b, (HL); b={self.b}"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
-        self.e  = self._ram.get_byte(self.PC + 1, signed=True)
+        self.b = (opcode >> 3) & 0x07
+
+class SET_b_deref_IX_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SET b, (IX+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDDCBC6, 0xDDCBCE, 0xDDCBD6, 0xDDCBDE, 0xDDCBE6, 0xDDCBEE, 0xDDCBF6, 0xDDCBFE]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"SET b, (IX+d); b={self.b}, d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.b = (opcode >> 3) & 0x07
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class SET_b_deref_IY_plus_d(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "SET b, (IY+d)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xFDCBC6, 0xFDCBCE, 0xFDCBD6, 0xFDCBDE, 0xFDCBE6, 0xFDCBEE, 0xFDCBF6, 0xFDCBFE]
+    @property
+    def size(self: Self) -> int:
+        return 4
+    def __str__(self: Self) -> str:
+        return f"SET b, (IY+d); b={self.b}, d={self.d:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.b = (opcode >> 3) & 0x07
+        self.d = self._ram.get_byte(self.PC + 2, signed=False)
+
+class JP_nn(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "JP nn"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xC3]
+    @property
+    def size(self: Self) -> int:
+        return 3
+    def __str__(self: Self) -> str:
+        return f"JP nn; nn={self.nn:04X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.nn = self._ram.get_word(self.PC + 1)
 
 class JP_cc_nn(z80.instruction.Instruction):
     @classmethod
@@ -1742,36 +2400,25 @@ class JP_cc_nn(z80.instruction.Instruction):
         self.cc = (opcode >> 3) & 0x07
         self.nn = self._ram.get_word(self.PC + 1)
 
-class JP_deref_HL(z80.instruction.Instruction):
+class JR_e(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
-        return "JP (HL)"
+        return "JR e"
     @classmethod
     def opcodes(self: Self) -> List[int]:
-        return [0xE9]
+        return [0x18]
     @property
     def size(self: Self) -> int:
-        return 1
+        return 2
     def __str__(self: Self) -> str:
-        return f"JP (HL);"
+        return f"JR e; e={self.e:02X}h"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
+        self.e  = self._ram.get_byte(self.PC + 1, signed=True)
 
-class JP_nn(z80.instruction.Instruction):
-    @classmethod
-    def name(cls) -> str:
-        return "JP nn"
-    @classmethod
-    def opcodes(self: Self) -> List[int]:
-        return [0xC3]
     @property
-    def size(self: Self) -> int:
-        return 3
-    def __str__(self: Self) -> str:
-        return f"JP nn; nn={self.nn:04X}h"
-    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
-        super().__init__(registers, ram, opcode)
-        self.nn = self._ram.get_word(self.PC + 1)
+    def jump_destination(self: Self) -> int:
+        return self.PC + self.size + self.e
 
 class JR_C_e(z80.instruction.Instruction):
     @classmethod
@@ -1789,21 +2436,9 @@ class JR_C_e(z80.instruction.Instruction):
         super().__init__(registers, ram, opcode)
         self.e  = self._ram.get_byte(self.PC + 1, signed=True)
 
-class JR_e(z80.instruction.Instruction):
-    @classmethod
-    def name(cls) -> str:
-        return "JR e"
-    @classmethod
-    def opcodes(self: Self) -> List[int]:
-        return [0x18]
     @property
-    def size(self: Self) -> int:
-        return 2
-    def __str__(self: Self) -> str:
-        return f"JR e; e={self.e:02X}h"
-    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
-        super().__init__(registers, ram, opcode)
-        self.e  = self._ram.get_byte(self.PC + 1, signed=True)
+    def jump_destination(self: Self) -> int:
+        return self.PC + self.size + self.e
 
 class JR_NC_e(z80.instruction.Instruction):
     @classmethod
@@ -1821,21 +2456,9 @@ class JR_NC_e(z80.instruction.Instruction):
         super().__init__(registers, ram, opcode)
         self.e  = self._ram.get_byte(self.PC + 1, signed=True)
 
-class JR_NZ_e(z80.instruction.Instruction):
-    @classmethod
-    def name(cls) -> str:
-        return "JR NZ, e"
-    @classmethod
-    def opcodes(self: Self) -> List[int]:
-        return [0x20]
     @property
-    def size(self: Self) -> int:
-        return 2
-    def __str__(self: Self) -> str:
-        return f"JR NZ, e; e={self.e:02X}h"
-    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
-        super().__init__(registers, ram, opcode)
-        self.e  = self._ram.get_byte(self.PC + 1, signed=True)
+    def jump_destination(self: Self) -> int:
+        return self.PC + self.size + self.e
 
 class JR_Z_e(z80.instruction.Instruction):
     @classmethod
@@ -1853,18 +2476,93 @@ class JR_Z_e(z80.instruction.Instruction):
         super().__init__(registers, ram, opcode)
         self.e  = self._ram.get_byte(self.PC + 1, signed=True)
 
-class LD_deref_IX_nn(z80.instruction.Instruction):
+    @property
+    def jump_destination(self: Self) -> int:
+        return self.PC + self.size + self.e
+
+class JR_NZ_e(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
-        return "LD (IX), nn"
+        return "JR NZ, e"
     @classmethod
     def opcodes(self: Self) -> List[int]:
-        return [0xDD21]
+        return [0x20]
     @property
     def size(self: Self) -> int:
-        return 4
+        return 2
     def __str__(self: Self) -> str:
-        return f"LD (IX), nn; nn={self.nn:04X}h"
+        return f"JR NZ, e; e={self.e:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.e  = self._ram.get_byte(self.PC + 1, signed=True)
+
+    @property
+    def jump_destination(self: Self) -> int:
+        return self.PC + self.size + self.e
+
+class JP_deref_HL(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "JP (HL)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xE9]
+    @property
+    def size(self: Self) -> int:
+        return 1
+    def __str__(self: Self) -> str:
+        return f"JP (HL);"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class DJNZ_e(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "DJNZ, e"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0x10]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"DJNZ, e; e={self.e:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.e  = self._ram.get_byte(self.PC + 1, signed=True)
+
+    @property
+    def jump_destination(self: Self) -> int:
+        return self.PC + self.size + self.e
+
+class CALL_nn(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "CALL nn"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xCD]
+    @property
+    def size(self: Self) -> int:
+        return 3
+    def __str__(self: Self) -> str:
+        return f"CALL nn; nn={self.nn:04X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.nn = self._ram.get_word(self.PC + 1)
+
+class CALL_cc_nn(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "CALL cc, nn"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xC4, 0xCC, 0xD4, 0xDC, 0xE4, 0xEC, 0xFC]
+    @property
+    def size(self: Self) -> int:
+        return 3
+    def __str__(self: Self) -> str:
+        return f"CALL cc, nn; nn={self.nn:04X}h"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
         self.nn = self._ram.get_word(self.PC + 1)
@@ -1900,33 +2598,233 @@ class RET_cc(z80.instruction.Instruction):
         super().__init__(registers, ram, opcode)
         self.cc = (opcode >> 3) & 0x07
 
-class RLCA(z80.instruction.Instruction):
+class RETI(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
-        return "RLCA"
+        return "RETI"
     @classmethod
     def opcodes(self: Self) -> List[int]:
-        return [0x07]
+        return [0xED4D]
     @property
     def size(self: Self) -> int:
-        return 1
+        return 2
     def __str__(self: Self) -> str:
-        return f"RLCA;"
+        return f"RETI;"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
 
-class RRA(z80.instruction.Instruction):
+class RETN(z80.instruction.Instruction):
     @classmethod
     def name(cls) -> str:
-        return "RRA"
+        return "RETN"
     @classmethod
     def opcodes(self: Self) -> List[int]:
-        return [0x1F]
+        return [0xED45]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"RETN;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class RST_p(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "RST p"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xC7, 0xCF, 0xD7, 0xDF, 0xE7, 0xEF, 0xF7, 0xFF]
     @property
     def size(self: Self) -> int:
         return 1
     def __str__(self: Self) -> str:
-        return f"RRA;"
+        return f"RST p; t={self.t}, p={self.t2p(self.t):02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.t = (opcode >> 3) & 0x07
+
+class IN_A_deref_n(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "IN A, (n)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xDB]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"IN A, (n); n={self.n:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.n = self._ram.get_byte(self.PC + 1, signed=False)
+
+class IN_r_deref_C(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "IN r, (C)"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xED40, 0xED48, 0xED50, 0xED58, 0xED60, 0xED68, 0xED78]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"IN r, (C); r={self.r2n(self.r)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.r = (opcode >> 3) & 0x07
+
+class INI(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "INI"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xEDA2]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"INI;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class INIR(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "INIR"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xEDB2]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"INIR;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class IND(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "IND"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xEDAA]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"IND;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class INDR(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "INDR"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xEDBA]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"INDR;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class OUT_deref_n_A(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "OUT (n), A"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xD3]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"OUT (n), A; n={self.n:02X}h"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.n = self._ram.get_byte(self.PC + 1, signed=False)
+
+class OUT_deref_C_r(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "OUT (C), r"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xED41, 0xED49, 0xED51, 0xED59, 0xED61, 0xED69, 0xED79]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"OUT (C), r; r={self.r2n(self.r)}"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+        self.r = (opcode >> 3) & 0x07
+
+class OUTI(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "OUTI"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xEDA3]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"OUTI;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class OTIR(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "OTIR"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xEDB3]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"OTIR;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class OUTD(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "OUTD"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xEDAB]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"OUTD;"
+    def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
+        super().__init__(registers, ram, opcode)
+
+class OTDR(z80.instruction.Instruction):
+    @classmethod
+    def name(cls) -> str:
+        return "OTDR"
+    @classmethod
+    def opcodes(self: Self) -> List[int]:
+        return [0xEDBB]
+    @property
+    def size(self: Self) -> int:
+        return 2
+    def __str__(self: Self) -> str:
+        return f"OTDR;"
     def __init__(self: Self, registers: z80.registers.Registers, ram: z80.ram.RAM, opcode: int) -> None:
         super().__init__(registers, ram, opcode)
 
