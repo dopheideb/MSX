@@ -16,6 +16,8 @@ class Disasm:
         if filename is not None:
             rom = open(filename, 'rb').read()
             self.z80.set_ram(bytes=rom, offset=0x4000)
+            self.z80.set_ram(bytes=rom, offset=0x4000)
+            self.z80.ram[0x4000] = None
             
             self.HL_plus_is_A = rom.find(b'\x85\x6F\xD0\x24\xC9')
             if self.HL_plus_is_A == -1:

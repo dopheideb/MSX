@@ -1,5 +1,6 @@
 import logging
-from   typing import Self
+from   typing import Self, List
+import z80.instruction
 import z80.instructions
 
 class AUX:
@@ -14,6 +15,8 @@ class AUX:
         return self.routines[address]
 ## Singleton
 aux = AUX()
+
+z80.instruction.Instruction.set_PC_formatter(func=lambda instr: f'{instr.PC:04X}')
 
 
 
@@ -63,7 +66,7 @@ class ADD_A_r(z80.instructions.ADD_A_r):
 
 class ADD_HL_ss(z80.instructions.ADD_HL_ss):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; ADD HL {self.ssn}\t; HL += {self.ssn}'
+        return f'{self.formatted_PC} ADD HL {self.ssn}\t\t; HL += {self.ssn}'
 
 class ADD_IX_pp(z80.instructions.ADD_IX_pp):
     def __str__(self: Self) -> str:
@@ -87,7 +90,7 @@ class AND_deref_IY_plus_d(z80.instructions.AND_deref_IY_plus_d):
 
 class AND_n(z80.instructions.AND_n):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; AND 0x{self.n:02X}\t; A &= {self.n:09_b}'
+        return f'{self.formatted_PC} AND 0x{self.n:02X}\t; A &= {self.n:09_b}'
 
 class AND_r(z80.instructions.AND_r):
     def __str__(self: Self) -> str:
@@ -120,7 +123,7 @@ class CALL_nn(z80.instructions.CALL_nn):
         except KeyError:
             post = ''
         
-        return f'{self.PC:04X}; CALL 0x{self.nn:04X}{post}'
+        return f'{self.formatted_PC} CALL 0x{self.nn:04X}{post}\t;'
 
 class CCF(z80.instructions.CCF):
     def __str__(self: Self) -> str:
@@ -192,7 +195,7 @@ class DEC_IY(z80.instructions.DEC_IY):
 
 class DEC_r(z80.instructions.DEC_r):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; DEC {self.rn}\t\t; --{self.rn}'
+        return f'{self.formatted_PC} DEC {self.rn}\t\t; --{self.rn}'
 
 class DEC_ss(z80.instructions.DEC_ss):
     def __str__(self: Self) -> str:
@@ -200,11 +203,11 @@ class DEC_ss(z80.instructions.DEC_ss):
 
 class DI(z80.instructions.DI):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; {self.name()}\t; Disable interrupts.'
+        return f'{self.formatted_PC} {self.name()}\t; Disable interrupts.'
 
 class DJNZ_e(z80.instructions.DJNZ_e):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; DJNZ 0x{self.jump_destination:04X}\t;'
+        return f'{self.formatted_PC} DJNZ 0x{self.jump_destination:04X}\t;'
 
 class EI(z80.instructions.EI):
     def __str__(self: Self) -> str:
@@ -216,7 +219,7 @@ class EXX(z80.instructions.EXX):
 
 class EX_AF_AFprime(z80.instructions.EX_AF_AFprime):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; {self.name()}\t;'
+        return f'{self.formatted_PC} {self.name()}\t;'
 
 class EX_deref_SP_HL(z80.instructions.EX_deref_SP_HL):
     def __str__(self: Self) -> str:
@@ -232,7 +235,7 @@ class EX_deref_SP_IY(z80.instructions.EX_deref_SP_IY):
 
 class EX_DE_HL(z80.instructions.EX_DE_HL):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; {self.name()}\t;'
+        return f'{self.formatted_PC} EX DE, HL\t\t;'
 
 class HALT(z80.instructions.HALT):
     def __str__(self: Self) -> str:
@@ -272,11 +275,11 @@ class INC_IY(z80.instructions.INC_IY):
 
 class INC_r(z80.instructions.INC_r):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; INC {self.rn}\t\t; ++{self.rn}'
+        return f'{self.formatted_PC} INC {self.rn}\t\t; ++{self.rn}'
 
 class INC_ss(z80.instructions.INC_ss):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; INC {self.ssn}\t\t; ++{self.ssn}'
+        return f'{self.formatted_PC} INC {self.ssn}\t\t; ++{self.ssn}'
 
 class IND(z80.instructions.IND):
     def __str__(self: Self) -> str:
@@ -312,7 +315,7 @@ class JP_deref_HL(z80.instructions.JP_deref_HL):
 
 class JP_nn(z80.instructions.JP_nn):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; JP 0x{self.nn:04X}'
+        return f'{self.formatted_PC} JP 0x{self.nn:04X}'
 
 class JR_C_e(z80.instructions.JR_C_e):
     def __str__(self: Self) -> str:
@@ -320,7 +323,7 @@ class JR_C_e(z80.instructions.JR_C_e):
 
 class JR_e(z80.instructions.JR_e):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; JR 0x{self.jump_destination:04X}\t;'
+        return f'{self.formatted_PC} JR 0x{self.jump_destination:04X}\t;'
 
 class JR_NC_e(z80.instructions.JR_NC_e):
     def __str__(self: Self) -> str:
@@ -328,7 +331,7 @@ class JR_NC_e(z80.instructions.JR_NC_e):
 
 class JR_NZ_e(z80.instructions.JR_NZ_e):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; JR NZ 0x{self.jump_destination:04X}\t;'
+        return f'{self.formatted_PC} JR NZ 0x{self.jump_destination:04X}\t;'
 
 class JR_Z_e(z80.instructions.JR_Z_e):
     def __str__(self: Self) -> str:
@@ -348,7 +351,7 @@ class LDI(z80.instructions.LDI):
 
 class LDIR(z80.instructions.LDIR):
     def __str__(self: Self) -> str:
-        return "STUB " + super().__str__()
+        return f'{self.formatted_PC} LDIR\t\t;'
 
 class LD_A_deref_BC(z80.instructions.LD_A_deref_BC):
     def __str__(self: Self) -> str:
@@ -372,13 +375,13 @@ class LD_A_R(z80.instructions.LD_A_R):
 
 class LD_dd_deref_nn(z80.instructions.LD_dd_deref_nn):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; {self.ddn} = *(0x{self.nn:04X})'
+        return f'{self.formatted_PC} {self.ddn} = *(0x{self.nn:04X})'
     def execute(self: Self):
         self._registers.set_reg_dd(self.dd, self.nn)
 
 class LD_dd_nn(z80.instructions.LD_dd_nn):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; LD {self.ddn}, 0x{self.nn:04X}\t; {self.ddn} = 0x{self.nn:04X}'
+        return f'{self.formatted_PC} LD {self.ddn}, 0x{self.nn:04X}\t; {self.ddn} = 0x{self.nn:04X}'
     def execute(self: Self):
         self._registers.set_reg_dd(self.dd, self.nn)
 
@@ -392,7 +395,7 @@ class LD_deref_DE_A(z80.instructions.LD_deref_DE_A):
 
 class LD_deref_HL_n(z80.instructions.LD_deref_HL_n):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; LD (HL), 0x{self.n:02X}\t; *(HL) = *(0x{self._registers.HL:04X}) = 0x{self.n:02X}'
+        return f'{self.formatted_PC} LD (HL), 0x{self.n:02X}\t; *(HL) = *(0x{self._registers.HL:04X}) = 0x{self.n:02X}'
 
 class LD_deref_HL_r(z80.instructions.LD_deref_HL_r):
     def __str__(self: Self) -> str:
@@ -419,7 +422,7 @@ class LD_deref_nn_A(z80.instructions.LD_deref_nn_A):
         comment = ''
         if self.nn == 0xFD9A:
             comment = 'H.KEYI[0] = A, 0xC3 means "JP"'
-        return f'{self.PC:04X}; *(0x{self.nn:04X}) := A (0x{self._registers.A:02X})' + (
+        return f'{self.formatted_PC} *(0x{self.nn:04X}) := A (0x{self._registers.A:02X})' + (
             (' ' + comment) if comment else comment)
 
 class LD_deref_nn_dd(z80.instructions.LD_deref_nn_dd):
@@ -431,11 +434,12 @@ class LD_deref_nn_HL(z80.instructions.LD_deref_nn_HL):
         comment = ''
         if self.nn == 0xFD9B:
             comment = 'H.KEYI[1] = L, H.KEYI[2] = H'
-        return f'{self.PC:04X}; *(0x{self.nn:04X}) := HL (0x{self._registers.HL:04X})' + (
+        return f'{self.formatted_PC} *(0x{self.nn:04X}) := HL (0x{self._registers.HL:04X})' + (
             (' ' + comment) if comment else comment)
     def execute(self: Self) -> None:
-        self._ram[self.nn+0] = self._registers.L
-        self._ram[self.nn+1] = self._registers.H
+        #self._ram[self.nn+0] = self._registers.L
+        #self._ram[self.nn+1] = self._registers.H
+        self._ram.set_word(offset=self.nn, value=self._registers.HL)
 
 class LD_deref_nn_IX(z80.instructions.LD_deref_nn_IX):
     def __str__(self: Self) -> str:
@@ -471,7 +475,7 @@ class LD_R_A(z80.instructions.LD_R_A):
 
 class LD_r_deref_HL(z80.instructions.LD_r_deref_HL):
     def __str__(self: Self) -> str:
-        return "STUB " + super().__str__()
+        return f'{self.formatted_PC} LD {self.rn}, (HL)\t;'
 
 class LD_r_deref_IX_plus_d(z80.instructions.LD_r_deref_IX_plus_d):
     def __str__(self: Self) -> str:
@@ -483,13 +487,13 @@ class LD_r_deref_IY_plus_d(z80.instructions.LD_r_deref_IY_plus_d):
 
 class LD_r_n(z80.instructions.LD_r_n):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; LD {self.rn}, 0x{self.n:02X}\t; {self.rn} = 0x{self.n:02X}'
+        return f'{self.formatted_PC} LD {self.rn}, 0x{self.n:02X}\t; {self.rn} = 0x{self.n:02X}'
     def execute(self: Self):
         self._registers.set_r_n(self.r, self.n)
 
 class LD_r_rprime(z80.instructions.LD_r_rprime):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; LD {self.rn}, {self.rprimen}\t\t; {self.rn} = {self.rprimen}'
+        return f'{self.formatted_PC} LD {self.rn}, {self.rprimen}\t\t; {self.rn} = {self.rprimen}'
 
 class LD_SP_HL(z80.instructions.LD_SP_HL):
     def __str__(self: Self) -> str:
@@ -565,7 +569,7 @@ class POP_IY(z80.instructions.POP_IY):
 
 class POP_qq(z80.instructions.POP_qq):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; POP {self.qqn}\t\t;'
+        return f'{self.formatted_PC} POP {self.qqn}\t\t;'
 
 class PUSH_IX(z80.instructions.PUSH_IX):
     def __str__(self: Self) -> str:
@@ -577,11 +581,11 @@ class PUSH_IY(z80.instructions.PUSH_IY):
 
 class PUSH_qq(z80.instructions.PUSH_qq):
     def __str__(self: Self) -> str:
-        return "STUB " + super().__str__()
+        return f'{self.formatted_PC} PUSH {self.qqn}\t\t;'
 
 class RET(z80.instructions.RET):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; {self.name()}\t\t;'
+        return f'{self.formatted_PC} {self.name()}\t\t;'
 
 class RETI(z80.instructions.RETI):
     def __str__(self: Self) -> str:
@@ -733,7 +737,7 @@ class SUB_n(z80.instructions.SUB_n):
 
 class SUB_r(z80.instructions.SUB_r):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; SUB {self.rn}\t\t; A -= {self.rn}'
+        return f'{self.formatted_PC} SUB {self.rn}\t\t; A -= {self.rn}'
 
 class XOR_deref_HL(z80.instructions.XOR_deref_HL):
     def __str__(self: Self) -> str:
@@ -749,10 +753,10 @@ class XOR_deref_IY_plus_d(z80.instructions.XOR_deref_IY_plus_d):
 
 class XOR_n(z80.instructions.XOR_n):
     def __str__(self: Self) -> str:
-        return f'{self.PC:04X}; A ^= {self.n:02X}'
+        return f'{self.formatted_PC} A ^= {self.n:02X}'
 
 class XOR_rprime(z80.instructions.XOR_rprime):
     def __str__(self: Self) -> str:
         if self.rprime == 0b111:
-            return f'{self.PC:04X}; A = 0, set flags.'
-        return f'{self.PC:04X}; A ^= {self.rprimen}'
+            return f'{self.formatted_PC} A = 0, set flags.'
+        return f'{self.formatted_PC} A ^= {self.rprimen}'

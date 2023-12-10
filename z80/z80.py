@@ -109,5 +109,5 @@ class Z80:
         return self._ram
     
     #@ram.setter
-    def set_ram(self: Self, bytes: bytes, offset: int=0) -> None:
+    def set_ram(self: Self, bytes: bytes, offset: int) -> None:
         self._ram[offset:len(bytes)] = bytes

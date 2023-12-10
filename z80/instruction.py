@@ -128,6 +128,8 @@ _t2p =\
 
 
 class Instruction(abc.ABC):
+    PC_formatter = None
+    
     instruction_sets = collections.defaultdict(list)
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -156,6 +158,16 @@ class Instruction(abc.ABC):
     @property
     @abc.abstractmethod
     def size(self: Self) -> int: pass
+    
+    @classmethod
+    def set_PC_formatter(cls, func):
+        cls.PC_formatter = func
+    
+    @property
+    def formatted_PC(self: Self):
+        if self.PC_formatter is None:
+            return f'0x{self.PC:04X}'
+        return self.PC_formatter()
     
     
     

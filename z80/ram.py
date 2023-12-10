@@ -39,5 +39,9 @@ class RAM:
             (self._ram[offset + 1] << 8)
         )
     
+    def set_word(self: Self, offset: int, value: int) -> None:
+        self[offset + 0] = value & 0x00FF
+        self[offset + 1] = value >> 8
+    
     def register_write_callback(self: Self, func, location) -> None:
         self._write_callback[location].append(func)

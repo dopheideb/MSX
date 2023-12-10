@@ -14,7 +14,7 @@ if __name__ == '__main__':
     for PC in sorted(output.keys()):
         try:
             routine_name = dasm.get_routine(PC)
-            logging.info(f"; Start of routine {routine_name}.")
+            print(f"; Start of routine {routine_name}.")
         except KeyError:
             pass
         
@@ -30,12 +30,12 @@ if __name__ == '__main__':
                     show_from = True
             
             if show_from:
-                logging.info(f";")
-                logging.info(f";")
-                logging.info(f";")
-                logging.info(f"; We can get here from:")
+                print(f";")
+                print(f";")
+                print(f";")
+                print(f"; We can get here from:")
                 for i in sorted(output[PC]['from'].keys()):
-                    logging.info(f";   0x{i:04X} {output[PC]['from'][i]}")
+                    print(f";   0x{i:04X} {output[PC]['from'][i]}")
         except NotImplementedError:
             pass
-        logging.info(f"{PC:04X} : {output[PC]['disasm']}")
+        print(f"{output[PC]['disasm']}")
