@@ -7,8 +7,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 if __name__ == '__main__':
     dasm = disasm.Disasm(sys.argv[1])
-    #dasm.add_routine(0x0056, 'FILVRM')
-    dasm.add_routine(0x4685, 'GEENIDEE')
+    dasm.add_routine(0x4685, 'CLUELESS_FOR_NOW')
     
     output = dasm.run()
     for PC in sorted(output.keys()):

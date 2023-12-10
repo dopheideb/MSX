@@ -3,21 +3,20 @@ import logging
 import queue
 import re
 import sys
-from   typing import Self
+from   typing import Self, Optional
 import z80
 import z80.disasm.instruction
 
 class Disasm:
-    def __init__(self: Self, filename: str=None) -> None:
+    def __init__(self: Self, filename: Optional[str]=None) -> None:
         self.disasm = collections.defaultdict(lambda: collections.defaultdict(dict))
         self.z80 = z80.Z80()
         self.z80.PC = 0x4000
         
         if filename is not None:
             rom = open(filename, 'rb').read()
-            self.z80.set_ram(bytes=rom, offset=0x4000)
-            self.z80.set_ram(bytes=rom, offset=0x4000)
-            self.z80.ram[0x4000] = None
+            for offset, value in enumerate(rom):
+                self.z80.ram[0x4000 + offset] = value
             
             self.HL_plus_is_A = rom.find(b'\x85\x6F\xD0\x24\xC9')
             if self.HL_plus_is_A == -1:
@@ -65,7 +64,7 @@ class Disasm:
             try:
                 self.z80.fetch_opcode()
                 instr = self.z80.execute_opcode()
-            except NotImplementedError:
+            except NotImplementedError as e:
                 logging.exception(f'Bailing out because of unknown opcode at pc {pc:04X}: 0x{e.args[0]:02X}')
                 break
             self.disasm[pc]['disasm'] = str(instr)

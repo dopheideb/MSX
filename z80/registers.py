@@ -14,7 +14,7 @@ class RegPair:
     @h.setter
     def h(self: Self, value: int) -> None:
         if value < 0 or value > 0xFF:
-            raise ValueError
+            raise ValueError(f'value not a byte, value={value}')
         self._h = value
 
     

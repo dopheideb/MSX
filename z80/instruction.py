@@ -3,134 +3,140 @@ import collections
 import logging
 import re
 import sys
-from   typing import Self, List, Type
+from   typing import Self, Dict, List, Type
 import z80.ram
 import z80.registers
-
-
-
-## The Z80 has instruction classes in which the instruction can be used on a 
-## fixed set of registers.
-## 
-## Example: LD r, n
-_r2n =\
-{
-    0b111: 'A',
-    0b000: 'B',
-    0b001: 'C',
-    0b010: 'D',
-    0b011: 'E',
-    0b100: 'H',
-    0b101: 'L',
-}
-
-
-
-_cc2n =\
-{
-    0b000: 'NZ',
-    0b001: 'Z',
-    0b010: 'NC',
-    0b011: 'C',
-    0b100: 'PO',
-    0b101: 'PE',
-    0b110: 'P',
-    0b111: 'M',
-}
-
-
-
-## The Z80 has instruction classes in which the instruction can be used on a 
-## fixed set of register pairs.
-## 
-## Example: LD dd, nn
-_dd2n =\
-{
-    0b00: 'BC',
-    0b01: 'DE',
-    0b10: 'HL',
-    0b11: 'SP',
-}
-
-
-
-## The Z80 has instruction classes in which the instruction can be used on a 
-## fixed set of register pairs.
-## 
-## Example: ADD IX, pp
-_pp2n =\
-{
-    0b00: 'BC',
-    0b01: 'DE',
-    0b10: 'IX',
-    0b11: 'SP',
-}
-
-
-
-## The Z80 has instruction classes in which the instruction can be used on a 
-## fixed set of register pairs.
-## 
-## Example: PUSH qq
-_qq2n =\
-{
-    0b00: 'BC',
-    0b01: 'DE',
-    0b10: 'HL',
-    0b11: 'AF',
-}
-
-
-
-## The Z80 has instruction classes in which the instruction can be used on a 
-## fixed set of register pairs.
-## 
-## Example: ADD IX, rr
-_rr2n =\
-{
-    0b00: 'BC',
-    0b01: 'DE',
-    0b10: 'IY',
-    0b11: 'SP',
-}
-
-
-
-## The Z80 has instruction classes in which the instruction can be used on a 
-## fixed set of register pairs.
-## 
-## Example: INC ss
-## 
-## Note: exactly the same as dd...
-_ss2n =\
-{
-    0b00: 'BC',
-    0b01: 'DE',
-    0b10: 'HL',
-    0b11: 'SP',
-}
-
-
-
-_t2p =\
-{
-    0b000: 0x00,
-    0b001: 0x08,
-    0b010: 0x10,
-    0b011: 0x18,
-    0b100: 0x20,
-    0b101: 0x28,
-    0b110: 0x30,
-    0b111: 0x38,
-}
-
 
 
 
 class Instruction(abc.ABC):
     PC_formatter = None
     
-    instruction_sets = collections.defaultdict(list)
+    
+    
+    ## The Z80 has instruction classes in which the instruction can be used on a 
+    ## fixed set of register pairs.
+    ## 
+    ## Example for cc: JP cc, nn
+    cc2name =\
+    {
+        0b000: 'NZ',	## 0
+        0b001: 'Z',	## 1
+        0b010: 'NC',	## 2
+        0b011: 'C',	## 3
+        0b100: 'PO',	## 4
+        0b101: 'PE',	## 5
+        0b110: 'P',	## 6
+        0b111: 'M',	## 7
+    }
+    
+    
+    
+    ## The Z80 has instruction classes in which the instruction can be used on a 
+    ## fixed set of register pairs.
+    ## 
+    ## Example for dd: LD dd, nn
+    dd2name =\
+    {
+        0b00: 'BC',	## 0
+        0b01: 'DE',	## 1
+        0b10: 'HL',	## 2
+        0b11: 'SP',	## 3
+    }
+    
+    
+    
+    ## The Z80 has instruction classes in which the instruction can be used on a 
+    ## fixed set of register pairs.
+    ## 
+    ## Example for pp: ADD IX, pp
+    pp2name =\
+    {
+        0b00: 'BC',	## 0
+        0b01: 'DE',	## 1
+        0b10: 'IX',	## 2
+        0b11: 'SP',	## 3
+    }
+    
+    
+    
+    ## The Z80 has instruction classes in which the instruction can be used on a 
+    ## fixed set of register pairs.
+    ## 
+    ## Example for qq: PUSH qq
+    qq2name =\
+    {
+        0b00: 'BC',	## 0
+        0b01: 'DE',	## 1
+        0b10: 'HL',	## 2
+        0b11: 'AF',	## 3
+    }
+    
+    
+    
+    ## The Z80 has instruction classes in which the instruction can be used on a 
+    ## fixed set of registers.
+    ## 
+    ## Example for r: LD r, n
+    r2name =\
+    {
+        0b000: 'B',	## 0
+        0b001: 'C',	## 1
+        0b010: 'D',	## 2
+        0b011: 'E',	## 3
+        0b100: 'H',	## 4
+        0b101: 'L',	## 5
+			## 6
+        0b111: 'A',	## 7
+    }
+    
+    
+    
+    ## The Z80 has instruction classes in which the instruction can be used on a 
+    ## fixed set of register pairs.
+    ## 
+    ## Example for rr: ADD IX, rr
+    rr2name =\
+    {
+        0b00: 'BC',	## 0
+        0b01: 'DE',	## 1
+        0b10: 'IY',	## 2
+        0b11: 'SP',	## 3
+    }
+    
+    
+    
+    ## The Z80 has instruction classes in which the instruction can be used on a 
+    ## fixed set of register pairs.
+    ## 
+    ## Example for ss: INC ss
+    ## 
+    ## Note: exactly the same as dd...
+    ss2name =\
+    {
+        0b00: 'BC',	## 0
+        0b01: 'DE',	## 1
+        0b10: 'HL',	## 2
+        0b11: 'SP',	## 3
+    }
+    
+    
+    
+    t2p =\
+    {
+        0b000: 0x00,
+        0b001: 0x08,
+        0b010: 0x10,
+        0b011: 0x18,
+        0b100: 0x20,
+        0b101: 0x28,
+        0b110: 0x30,
+        0b111: 0x38,
+    }
+    
+    
+    
+    instruction_sets: Dict[str, List['Instruction']] = collections.defaultdict(list)
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         cls.instruction_sets[cls.__module__].append(cls)
@@ -153,7 +159,7 @@ class Instruction(abc.ABC):
     
     @classmethod
     @abc.abstractmethod
-    def opcodes(self: Self) -> List[int]: pass
+    def opcodes(cls) -> List[int]: pass
     
     @property
     @abc.abstractmethod
@@ -168,88 +174,12 @@ class Instruction(abc.ABC):
         if self.PC_formatter is None:
             return f'0x{self.PC:04X}'
         return self.PC_formatter()
-    
-    
-    
-    @classmethod
-    def cc2n(cls, cc: int) -> str:
-        return _cc2n[cc]
-    
-    @classmethod
-    def dd2n(cls, dd: int) -> str:
-        return _dd2n[dd]
-    
-    @property
-    def ddn(self) -> str:
-        return _dd2n[self.dd]
-    
-    
-    
-    @classmethod
-    def pp2n(cls, pp: int) -> str:
-        return _pp2n[pp]
-    
-    @property
-    def ppn(self: Self) -> str:
-        return _pp2n[self.pp]
-    
-    
-    
-    @classmethod
-    def qq2n(cls, qq: int) -> str:
-        return _qq2n[qq]
-    
-    @property
-    def qqn(self) -> str:
-        return _qq2n[self.qq]
-    
-    
-    
-    @classmethod
-    def r2n(cls, r: int) -> str:
-        return _r2n[r]
-    
-    @property
-    def rn(self) -> str:
-        return _r2n[self.r]
-    
-    @property
-    def rprimen(self) -> str:
-        return _r2n[self.rprime]
-    
-    
-    
-    @classmethod
-    def rr2n(cls, rr: int) -> str:
-        return _rr2n[rr]
-    
-    @property
-    def rrn(self: Self) -> str:
-        return _rr2n[self.rr]
-    
-    
-    
-    @classmethod
-    def ss2n(cls, ss: int) -> str:
-        return _ss2n[ss]
-    
-    @property
-    def ssn(self: Self) -> str:
-        return _ss2n[self.ss]
-    
-    
-    
-    @classmethod
-    def t2p(cls, t: int) -> str:
-        return _t2p[t]
-    
-    @property
-    def tp(self: Self) -> str:
-        return _t2p[self.t]
 
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+    
     b = range(8)
     cc = range(8)
     dd = range(4)
@@ -1662,7 +1592,7 @@ if __name__ == '__main__':
         {
             'opcodes': [ (0b11_000_100 | (i << 3)) for i in r],
             'size': 3,
-            'operands': [ 'nn' ],
+            'operands': [ 'cc3', 'nn' ],
         },
         
         ## Page 285
@@ -1827,16 +1757,16 @@ if __name__ == '__main__':
                 set_variables.append(f'self.b = (opcode >> 3) & 0x07')
                 str_args.append('b={self.b}')
             elif operand == 'cc3':
-                set_variables.append(f'self.cc = (opcode >> 3) & 0x07')
-                str_args.append('cc={self.cc2n(self.cc)}')
+                set_variables.append(f'self._cc = (opcode >> 3) & 0x07')
+                str_args.append('cc={self.cc}')
             elif operand == 'd':
                 set_variables.append(f'self.d = self._ram.get_byte(self.PC + 2, signed=False)')
                 str_args.append('d={self.d:02X}h')
             elif operand == 'dd4':
-                set_variables.append(f'self.dd = (opcode >> 4) & 0x03')
-                str_args.append('dd={self.dd2n(self.dd)}')
+                set_variables.append(f'self._dd = (opcode >> 4) & 0x03')
+                str_args.append('dd={self.dd}')
             elif operand == 'e':
-                set_variables.append(f'self.e  = self._ram.get_byte(self.PC + {first_arg_offset}, signed=True)')
+                set_variables.append(f'self.e = self._ram.get_byte(self.PC + {first_arg_offset}, signed=True)')
                 str_args.append('e={self.e:02X}h')
             elif operand == 'n':
                 set_variables.append(f'self.n = self._ram.get_byte(self.PC + {first_arg_offset}, signed=False)')
@@ -1845,29 +1775,29 @@ if __name__ == '__main__':
                 set_variables.append(f'self.nn = self._ram.get_word(self.PC + {first_arg_offset})')
                 str_args.append('nn={self.nn:04X}h')
             elif operand == 'pp4':
-                set_variables.append(f'self.pp = (opcode >> 4) & 0x03')
-                str_args.append('pp={self.pp2n(self.pp)}')
+                set_variables.append(f'self._pp = (opcode >> 4) & 0x03')
+                str_args.append('pp={self.pp}')
             elif operand == 'qq4':
-                set_variables.append(f'self.qq = (opcode >> 4) & 0x03')
-                str_args.append('qq={self.qq2n(self.qq)}')
+                set_variables.append(f'self._qq = (opcode >> 4) & 0x03')
+                str_args.append('qq={self.qq}')
             elif operand == 'r0':
-                set_variables.append(f'self.r = (opcode >> 0) & 0x07')
-                str_args.append('r={self.r2n(self.r)}')
+                set_variables.append(f'self._r = (opcode >> 0) & 0x07')
+                str_args.append('r={self.r}')
             elif operand == 'r3':
-                set_variables.append(f'self.r = (opcode >> 3) & 0x07')
-                str_args.append('r={self.r2n(self.r)}')
+                set_variables.append(f'self._r = (opcode >> 3) & 0x07')
+                str_args.append('r={self.r}')
             elif operand == 'rprime0':
-                set_variables.append(f'self.rprime = (opcode >> 0) & 0x07')
-                str_args.append("r'={self.r2n(self.rprime)}")
+                set_variables.append(f'self._rprime = (opcode >> 0) & 0x07')
+                str_args.append("r'={self.rprime}")
             elif operand == 'rr4':
-                set_variables.append(f'self.rr = (opcode >> 4) & 0x03')
-                str_args.append('rr={self.rr2n(self.rr)}')
+                set_variables.append(f'self._rr = (opcode >> 4) & 0x03')
+                str_args.append('rr={self.rr}')
             elif operand == 't3':
-                set_variables.append(f'self.t = (opcode >> 3) & 0x07')
-                str_args.append('t={self.t}, p={self.t2p(self.t):02X}h')
+                set_variables.append(f'self._t = (opcode >> 3) & 0x07')
+                str_args.append('t={self._t}, p={self.p:02X}h')
             elif operand == 'ss4':
-                set_variables.append(f'self.ss = (opcode >> 4) & 0x03')
-                str_args.append('ss={self.ss2n(self.ss)}')
+                set_variables.append(f'self._ss = (opcode >> 4) & 0x03')
+                str_args.append('ss={self.ss}')
             else:
                 raise ValueError(f"Unknown operand name '{operand}'.")
         classname = instr_name.replace(" ", "_").replace('(', 'deref_').replace("'", 'prime').translate({ord(ch):None for ch in ',)'}).replace("+", "_plus_")
@@ -1877,7 +1807,7 @@ if __name__ == '__main__':
         output += f'    def name(cls) -> str:\n'
         output += f'        return "{instr_name}"\n'
         output += f'    @classmethod\n'
-        output += f'    def opcodes(self: Self) -> List[int]:\n'
+        output += f'    def opcodes(cls) -> List[int]:\n'
         output +=  '        return ['
         output +=  ', '.join(map(lambda i: f'0x{i:02X}', instr['opcodes']))
         output +=  ']\n'
@@ -1896,9 +1826,57 @@ if __name__ == '__main__':
         if len(set_variables) > 0:
             output += '        '
             output += '\n        '.join(set_variables) + '\n'
-        if re.search(pattern=' e$', string=instr_name, flags=0):
-            output += '\n'
-            output += '    @property\n'
-            output += '    def jump_destination(self: Self) -> int:\n'
-            output += '        return self.PC + self.size + self.e\n'
+        for operand in instr['operands']:
+            operand_no_digit = re.sub(r'[0-9]$', '', operand)
+            match operand_no_digit:
+                case 'cc':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def cc(self: Self) -> str:\n'
+                    output += '        return self.cc2name[self._cc]\n'
+                case 'dd':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def dd(self: Self) -> str:\n'
+                    output += '        return self.dd2name[self._dd]\n'
+                case 'e':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def jump_destination(self: Self) -> int:\n'
+                    output += '        return self.PC + self.size + self.e\n'
+                case 'pp':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def pp(self: Self) -> str:\n'
+                    output += '        return self.pp2name[self._pp]\n'
+                case 'qq':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def qq(self: Self) -> str:\n'
+                    output += '        return self.qq2name[self._qq]\n'
+                case 'r':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def r(self: Self) -> str:\n'
+                    output += '        return self.r2name[self._r]\n'
+                case 'rprime':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def rprime(self: Self) -> str:\n'
+                    output += '        return self.r2name[self._rprime]\n'
+                case 'rr':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def rr(self: Self) -> str:\n'
+                    output += '        return self.rr2name[self._rr]\n'
+                case 'ss':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def ss(self: Self) -> str:\n'
+                    output += '        return self.ss2name[self._ss]\n'
+                case 't':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def p(self: Self) -> int:\n'
+                    output += '        return self.t2p[self._t]\n'
     print(output)

@@ -6,7 +6,129 @@ import z80.instructions
 class AUX:
     routines =\
     {
-        0x0056: 'FILVRM'
+        ## Source: http://map.grauw.nl/resources/msxbios.php
+        0x0000: "CHKRAM",
+        0x0008: "SYNCHR",
+        0x000C: "RDSLT",
+        0x0010: "CHRGTR",
+        0x0014: "WRSLT",
+        0x0018: "OUTDO",
+        0x001C: "CALSLT",
+        0x0020: "DCOMPR",
+        0x0024: "ENASLT",
+        0x0028: "GETYPR",
+        0x0030: "CALLF",
+        0x0038: "KEYINT",
+        0x003B: "INITIO",
+        0x003E: "INIFNK",
+        0x0041: "DISSCR",
+        0x0044: "ENASCR",
+        0x0047: "WRTVDP(data_to_write=B, register_number=C)",
+        0x004A: "RDVRM",
+        0x004D: "WRTVRM",
+        0x0050: "SETRD",
+        0x0053: "SETWRT",
+        0x0056: "FILVRM",
+        0x0059: "LDIRMV",
+        0x005C: "LDIRVM",
+        0x005F: "CHGMOD",
+        0x0062: "CHGCLR",
+        0x0066: "NMI",
+        0x0069: "CLRSPR",
+        0x006C: "INITXT",
+        0x006F: "INIT32",
+        0x0072: "INIGRP",
+        0x0075: "INIMLT",
+        0x0078: "SETTXT",
+        0x007B: "SETT32",
+        0x007E: "SETGRP",
+        0x0081: "SETMLT",
+        0x0084: "CALPAT",
+        0x0087: "CALATR",
+        0x008A: "GSPSIZ",
+        0x008D: "GRPPRT",
+        0x0090: "GICINI",
+        0x0093: "WRTPSG(psg_register_number=A, data_to_write=E)",
+        0x0096: "RDPSG(psg_register_number=A)",
+        0x0099: "STRTMS",
+        0x009C: "CHSNS",
+        0x009F: "CHGET",
+        0x00A2: "CHPUT",
+        0x00A5: "LPTOUT",
+        0x00A8: "LPTSTT",
+        0x00AB: "CNVCHR",
+        0x00AE: "PINLIN",
+        0x00B1: "INLIN",
+        0x00B4: "QINLIN",
+        0x00B7: "BREAKX",
+        0x00BA: "ISCNTC",
+        0x00BD: "CKCNTC",
+        0x00C0: "BEEP",
+        0x00C3: "CLS",
+        0x00C6: "POSIT",
+        0x00C9: "FNKSB",
+        0x00CC: "ERAFNK",
+        0x00CF: "DSPFNK",
+        0x00D2: "TOTEXT",
+        0x00D5: "GTSTCK",
+        0x00D8: "GTTRIG",
+        0x00DB: "GTPAD",
+        0x00DE: "GTPDL",
+        0x00E1: "TAPION",
+        0x00E4: "TAPIN",
+        0x00E7: "TAPIOF",
+        0x00EA: "TAPOON",
+        0x00ED: "TAPOUT",
+        0x00F0: "TAPOOF",
+        0x00F3: "STMOTR",
+        0x00F6: "LFTQ",
+        0x00F9: "PUTQ",
+        0x00FC: "RIGHTC",
+        0x00FF: "LEFTC",
+        0x0102: "UPC",
+        0x0105: "TUPC",
+        0x0108: "DOWNC",
+        0x010B: "TDOWNC",
+        0x010E: "SCALXY",
+        0x0111: "MAPXY",
+        0x0114: "FETCHC",
+        0x0117: "STOREC",
+        0x011A: "SETATR",
+        0x011D: "READC",
+        0x0120: "SETC",
+        0x0123: "NSETCX",
+        0x0126: "GTASPC",
+        0x0129: "PNTINI",
+        0x012C: "SCANR",
+        0x012F: "SCANL",
+        0x0132: "CHGCAP",
+        0x0135: "CHGSND",
+        0x0138: "RSLREG",
+        0x013B: "WSLREG",
+        0x013E: "RDVDP",
+        0x0141: "SNSMAT(keyboard_matrix_line=A)",
+        0x0144: "PHYDIO",
+        0x0147: "FORMAT",
+        0x014A: "ISFLIO",
+        0x014D: "OUTDLP",
+        0x0150: "GETVCP",
+        0x0153: "GETVC2",
+        0x0156: "KILBUF",
+        0x0159: "CALBAS",
+        0x015C: "SUBROM",
+        0x015F: "EXTROM",
+        0x0162: "CHKSLZ",
+        0x0165: "CHKNEW",
+        0x0168: "EOL",
+        0x016B: "BIGFIL",
+        0x016E: "NSETRD",
+        0x0171: "NSTWRT",
+        0x0174: "NRDVRM",
+        0x0177: "NWRVRM",
+        0x0180: "CHGCPU",
+        0x0183: "GETCPU",
+        0x0186: "PCMPLY",
+        0x0189: "PCMREC",
     }
     
     def add_routine(self: Self, address: int, routine_name: str) -> None:
@@ -66,7 +188,7 @@ class ADD_A_r(z80.instructions.ADD_A_r):
 
 class ADD_HL_ss(z80.instructions.ADD_HL_ss):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} ADD HL {self.ssn}\t\t; HL += {self.ssn}'
+        return f'{self.formatted_PC} ADD HL {self.ss}\t\t; HL += {self.ss}'
 
 class ADD_IX_pp(z80.instructions.ADD_IX_pp):
     def __str__(self: Self) -> str:
@@ -119,11 +241,11 @@ class CALL_cc_nn(z80.instructions.CALL_cc_nn):
 class CALL_nn(z80.instructions.CALL_nn):
     def __str__(self: Self) -> str:
         try:
-            post = f', {aux.routines[self.nn]}'
+            post = f'{aux.routines[self.nn]}'
         except KeyError:
             post = ''
         
-        return f'{self.formatted_PC} CALL 0x{self.nn:04X}{post}\t;'
+        return f'{self.formatted_PC} CALL 0x{self.nn:04X}\t; {post}'
 
 class CCF(z80.instructions.CCF):
     def __str__(self: Self) -> str:
@@ -195,7 +317,7 @@ class DEC_IY(z80.instructions.DEC_IY):
 
 class DEC_r(z80.instructions.DEC_r):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} DEC {self.rn}\t\t; --{self.rn}'
+        return f'{self.formatted_PC} DEC {self.r}\t\t; --{self.r}'
 
 class DEC_ss(z80.instructions.DEC_ss):
     def __str__(self: Self) -> str:
@@ -219,7 +341,7 @@ class EXX(z80.instructions.EXX):
 
 class EX_AF_AFprime(z80.instructions.EX_AF_AFprime):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} {self.name()}\t;'
+        return f"{self.formatted_PC} EX AF AF'\t\t;"
 
 class EX_deref_SP_HL(z80.instructions.EX_deref_SP_HL):
     def __str__(self: Self) -> str:
@@ -275,11 +397,11 @@ class INC_IY(z80.instructions.INC_IY):
 
 class INC_r(z80.instructions.INC_r):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} INC {self.rn}\t\t; ++{self.rn}'
+        return f'{self.formatted_PC} INC {self.r}\t\t; ++{self.r}'
 
 class INC_ss(z80.instructions.INC_ss):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} INC {self.ssn}\t\t; ++{self.ssn}'
+        return f'{self.formatted_PC} INC {self.ss}\t\t; ++{self.ss}'
 
 class IND(z80.instructions.IND):
     def __str__(self: Self) -> str:
@@ -375,15 +497,15 @@ class LD_A_R(z80.instructions.LD_A_R):
 
 class LD_dd_deref_nn(z80.instructions.LD_dd_deref_nn):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} {self.ddn} = *(0x{self.nn:04X})'
+        return f'{self.formatted_PC} LD {self.dd}, (0x{self.nn:04X})\t; {self.dd} = *(0x{self.nn:04X})'
     def execute(self: Self):
-        self._registers.set_reg_dd(self.dd, self.nn)
+        self._registers.set_reg_dd(self._dd, self.nn)
 
 class LD_dd_nn(z80.instructions.LD_dd_nn):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} LD {self.ddn}, 0x{self.nn:04X}\t; {self.ddn} = 0x{self.nn:04X}'
+        return f'{self.formatted_PC} LD {self.dd}, 0x{self.nn:04X}\t; {self.dd} = 0x{self.nn:04X}'
     def execute(self: Self):
-        self._registers.set_reg_dd(self.dd, self.nn)
+        self._registers.set_reg_dd(self._dd, self.nn)
 
 class LD_deref_BC_A(z80.instructions.LD_deref_BC_A):
     def __str__(self: Self) -> str:
@@ -475,7 +597,7 @@ class LD_R_A(z80.instructions.LD_R_A):
 
 class LD_r_deref_HL(z80.instructions.LD_r_deref_HL):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} LD {self.rn}, (HL)\t;'
+        return f'{self.formatted_PC} LD {self.r}, (HL)\t\t;'
 
 class LD_r_deref_IX_plus_d(z80.instructions.LD_r_deref_IX_plus_d):
     def __str__(self: Self) -> str:
@@ -487,13 +609,13 @@ class LD_r_deref_IY_plus_d(z80.instructions.LD_r_deref_IY_plus_d):
 
 class LD_r_n(z80.instructions.LD_r_n):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} LD {self.rn}, 0x{self.n:02X}\t; {self.rn} = 0x{self.n:02X}'
+        return f'{self.formatted_PC} LD {self.r}, 0x{self.n:02X}\t\t; {self.r} = 0x{self.n:02X}'
     def execute(self: Self):
-        self._registers.set_r_n(self.r, self.n)
+        self._registers.set_r_n(self._r, self.n)
 
 class LD_r_rprime(z80.instructions.LD_r_rprime):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} LD {self.rn}, {self.rprimen}\t\t; {self.rn} = {self.rprimen}'
+        return f'{self.formatted_PC} LD {self.r}, {self.rprime}\t\t; {self.r} = {self.rprime}'
 
 class LD_SP_HL(z80.instructions.LD_SP_HL):
     def __str__(self: Self) -> str:
@@ -569,7 +691,7 @@ class POP_IY(z80.instructions.POP_IY):
 
 class POP_qq(z80.instructions.POP_qq):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} POP {self.qqn}\t\t;'
+        return f'{self.formatted_PC} POP {self.qq}\t\t;'
 
 class PUSH_IX(z80.instructions.PUSH_IX):
     def __str__(self: Self) -> str:
@@ -581,11 +703,11 @@ class PUSH_IY(z80.instructions.PUSH_IY):
 
 class PUSH_qq(z80.instructions.PUSH_qq):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} PUSH {self.qqn}\t\t;'
+        return f'{self.formatted_PC} PUSH {self.qq}\t\t;'
 
 class RET(z80.instructions.RET):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} {self.name()}\t\t;'
+        return f'{self.formatted_PC} RET\t\t;'
 
 class RETI(z80.instructions.RETI):
     def __str__(self: Self) -> str:
@@ -737,7 +859,7 @@ class SUB_n(z80.instructions.SUB_n):
 
 class SUB_r(z80.instructions.SUB_r):
     def __str__(self: Self) -> str:
-        return f'{self.formatted_PC} SUB {self.rn}\t\t; A -= {self.rn}'
+        return f'{self.formatted_PC} SUB {self.r}\t\t; A -= {self.r}'
 
 class XOR_deref_HL(z80.instructions.XOR_deref_HL):
     def __str__(self: Self) -> str:
@@ -759,4 +881,4 @@ class XOR_rprime(z80.instructions.XOR_rprime):
     def __str__(self: Self) -> str:
         if self.rprime == 0b111:
             return f'{self.formatted_PC} A = 0, set flags.'
-        return f'{self.formatted_PC} A ^= {self.rprimen}'
+        return f'{self.formatted_PC} A ^= {self.rprime}'

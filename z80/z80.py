@@ -1,5 +1,5 @@
 import logging
-from   typing import Self, Type
+from   typing import Self, Dict, List, Type
 import z80.instruction
 import z80.instructions
 import z80.ram
@@ -9,7 +9,7 @@ import z80.ram
 class Z80:
     def __init__(self: Self):
         self._ram = z80.ram.RAM(size=128 * 1024)
-        self._opcode2instruction = {}
+        self._opcode2instruction: Dict[int, z80.instruction.Instruction] = {}
         self.registers = z80.registers.Registers()
         
         self.load_instruction_set('z80.instructions')
@@ -20,7 +20,7 @@ class Z80:
             logging.debug(f"Loading instruction {instruction}.")
             self.add_instruction(instruction, overwrite)
     
-    def add_instruction(self: Self, instruction_class: Type[z80.instruction.Instruction], overwrite: bool=False) -> None:
+    def add_instruction(self: Self, instruction_class: z80.instruction.Instruction, overwrite: bool=False) -> None:
         for opcode in instruction_class.opcodes():
             if not overwrite and opcode in self._opcode2instruction:
                 error = f'Tried to overwrite opcode 0x{opcode:02X} with overwrite=False. Opcode is already tied to {str(self._opcode2instruction[opcode])}.'
@@ -28,7 +28,7 @@ class Z80:
                 raise ValueError(error)
             self._opcode2instruction[opcode] = instruction_class
     
-    def override_instruction(self: Self, instruction_class: Type[z80.instruction.Instruction]) -> None:
+    def override_instruction(self: Self, instruction_class: z80.instruction.Instruction) -> None:
         self.add_instruction(instruction_class, overwrite=True)
     
     def stepi(self: Self):
