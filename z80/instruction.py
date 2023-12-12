@@ -9,11 +9,75 @@ import z80.registers
 
 
 
+class b(int):
+    def __str__(self: Self) -> str: return f'{int(self)}'
+class d(int):
+    def __str__(self: Self) -> str: return f'0{int(self):02x}h'
+class cc(str):
+    def __str__(self: Self) -> str: return self.lower()
+class dd(str):
+    def __str__(self: Self) -> str: return self.lower()
+class e(int):
+    def __str__(self: Self) -> str: return f'{2+int(self):+}'
+class jp(int):
+    def __str__(self: Self) -> str: return f'0{int(self):04x}h'
+class PC(int):
+    def __str__(self: Self) -> str: return f'{int(self):04x}'
+class p(int):
+    def __str__(self: Self) -> str: return f'{int(self):{"02x" if self >= 10 else ""}}{"h" if self >= 10 else ""}'
+class n(int):
+    def __str__(self: Self) -> str: return f'0{int(self):02x}h'
+class nn(int):
+    def __str__(self: Self) -> str: return f'0{int(self):04x}h'
+class pp(str):
+    def __str__(self: Self) -> str: return self.lower()
+class qq(str):
+    def __str__(self: Self) -> str: return self.lower()
+class r(str):
+    def __str__(self: Self) -> str: return self.lower()
+class rr(str):
+    def __str__(self: Self) -> str: return self.lower()
+class ss(str):
+    def __str__(self: Self) -> str: return self.lower()
+
+class FormattingType:
+    b  = b
+    cc = cc
+    d  = d
+    dd = dd
+    e  = e
+    jp = jp
+    n  = n
+    nn = nn
+    PC = PC
+    p  = p
+    pp = pp
+    qq = qq
+    r  = r
+    rr = rr
+    ss = ss
+    @classmethod
+    def set(cls, typename, formatting_type):
+        match typename:
+            case 'b' : cls.b  = formatting_type
+            case 'cc': cls.cc = formatting_type
+            case 'd' : cls.d  = formatting_type
+            case 'dd': cls.dd = formatting_type
+            case 'e' : cls.e  = formatting_type
+            case 'jp': cls.jp = formatting_type
+            case 'n' : cls.n  = formatting_type
+            case 'nn': cls.nn = formatting_type
+            case 'PC': cls.PC = formatting_type
+            case 'p' : cls.p  = formatting_type
+            case 'pp': cls.pp = formatting_type
+            case 'qq': cls.qq = formatting_type
+            case 'r' : cls.r  = formatting_type
+            case 'rr': cls.rr = formatting_type
+            case 'ss': cls.ss = formatting_type
+            case _:
+                raise ValueError(f"Unknown typename '{typename}'.")
+
 class Instruction(abc.ABC):
-    PC_formatter = None
-    
-    
-    
     ## The Z80 has instruction classes in which the instruction can be used on a 
     ## fixed set of register pairs.
     ## 
@@ -50,6 +114,8 @@ class Instruction(abc.ABC):
     ## fixed set of register pairs.
     ## 
     ## Example for pp: ADD IX, pp
+    ## 
+    ## FIXME: Page 194 calls it wrongfully ss.
     pp2name =\
     {
         0b00: 'BC',	## 0
@@ -95,7 +161,9 @@ class Instruction(abc.ABC):
     ## The Z80 has instruction classes in which the instruction can be used on a 
     ## fixed set of register pairs.
     ## 
-    ## Example for rr: ADD IX, rr
+    ## Example for rr: ADD IY, rr
+    ## 
+    ## FIXME: Page 196 calls it wrongfully ss.
     rr2name =\
     {
         0b00: 'BC',	## 0
@@ -152,7 +220,7 @@ class Instruction(abc.ABC):
         ## The program counter will change, and soon. We make a copy of the 
         ## current value so we can inspect the program counter without having 
         ## to hurry.
-        self.PC = self._registers.PC
+        self._PC = PC(self._registers.PC)
     
     @property
     def opcode(self: Self) -> int: return self._opcode
@@ -165,15 +233,27 @@ class Instruction(abc.ABC):
     @abc.abstractmethod
     def size(self: Self) -> int: pass
     
+    @property
+    def PC(self: Self) -> int:
+        return FormattingType.PC(self._PC)
+
+class Illegal(Instruction):
     @classmethod
-    def set_PC_formatter(cls, func):
-        cls.PC_formatter = func
+    def opcodes(cls) -> List[int]:
+        return []
     
     @property
-    def formatted_PC(self: Self):
-        if self.PC_formatter is None:
-            return f'0x{self.PC:04X}'
-        return self.PC_formatter()
+    def size(self: Self) -> int:
+        if self._opcode <= 0xff:
+            return 1
+        if self._opcode <= 0xffff:
+            return 2
+        if self._opcode <= 0xffffff:
+            return 3
+        return 4
+    
+    def __str__(self: Self) -> str:
+        return f'Illegal (or unknown) opcode 0x{self._opcode:02X}.'
 
 
 
@@ -443,7 +523,7 @@ if __name__ == '__main__':
         {
             'opcodes': [ (0xED00 | 0b01_00_0011 | (i << 4)) for i in dd ],
             'size': 4,
-            'operands': [ 'nn' ],
+            'operands': [ 'nn', 'dd4' ],
         },
         
         ## Page 110
@@ -707,7 +787,7 @@ if __name__ == '__main__':
         {
             'opcodes': [ (0b10001_000 | (i << 0)) for i in r ],
             'size': 1,
-            'operands': [],
+            'operands': [ 'r0' ],
         },
         
         ## Page 151
@@ -786,12 +866,54 @@ if __name__ == '__main__':
         
         
         
+        ## Page 155
+        "SBC r":\
+        {
+            'opcodes': [ (0b10011_000 | (i << 0)) for i in r ],
+            'size': 1,
+            'operands': [ 'r0' ],
+        },
+        
+        ## Page 155
+        "SBC n":\
+        {
+            'opcodes': [ 0xDE ],
+            'size': 2,
+            'operands': [ 'n' ],
+        },
+        
+        ## Page 155
+        "SBC (HL)":\
+        {
+            'opcodes': [ 0x9E ],
+            'size': 1,
+            'operands': [],
+        },
+        
+        ## Page 155
+        "SBC (IX+d)":\
+        {
+            'opcodes': [ 0xDD9E ],
+            'size': 3,
+            'operands': [ 'd' ],
+        },
+        
+        ## Page 155
+        "SBC (IY+d)":\
+        {
+            'opcodes': [ 0xFD9E ],
+            'size': 3,
+            'operands': [ 'd' ],
+        },
+        
+        
+        
         ## Page 157
         "AND r":\
         {
             'opcodes': [ (0b10100_000 | (i << 0)) for i in r ],
             'size': 1,
-            'operands': [],
+            'operands': [ 'r0' ],
         },
         
         ## Page 157
@@ -1047,7 +1169,7 @@ if __name__ == '__main__':
         "NEG":\
         {
             'opcodes': [ 0xED44 ],
-            'size': 1,
+            'size': 2,
             'operands': [],
         },
         
@@ -1158,7 +1280,7 @@ if __name__ == '__main__':
         "ADD IX, pp":\
         {
             'opcodes': [ (0xDD00 | 0b00_00_1001 | (i << 4)) for i in pp ],
-            'size': 1,
+            'size': 2,
             'operands': [ 'pp4' ],
         },
         
@@ -1263,7 +1385,7 @@ if __name__ == '__main__':
             #'opcodes': [ (0xCB00 | 0b0000_000 | (i << 0)) for i in r ],
             'opcodes': [ (0xCB00 | 0b0000_000 | (i << 0)) for i in r ],
             'size': 2,
-            'operands': [],
+            'operands': [ 'r0' ],
         },
         
         ## Page 215
@@ -1278,6 +1400,14 @@ if __name__ == '__main__':
         "RLC (IX+d)":\
         {
             'opcodes': [ 0xDDCB06 ],
+            'size': 4,
+            'operands': [ 'd' ],
+        },
+        
+        ## Page 219
+        "RLC (IY+d)":\
+        {
+            'opcodes': [ 0xFDCB06 ],
             'size': 4,
             'operands': [ 'd' ],
         },
@@ -1436,6 +1566,8 @@ if __name__ == '__main__':
         },
         
         ## Page 245
+        ## 
+        ## FIXME: Page 245 wrongfully does not mention bit 7.
         "BIT b, (HL)":\
         {
             'opcodes': [ (0xCB00 | 0b01_000_110 | (i << 3)) for i in b ],
@@ -1590,7 +1722,7 @@ if __name__ == '__main__':
         ## Page 283
         "CALL cc, nn":\
         {
-            'opcodes': [ (0b11_000_100 | (i << 3)) for i in r],
+            'opcodes': [ (0b11_000_100 | (i << 3)) for i in cc ],
             'size': 3,
             'operands': [ 'cc3', 'nn' ],
         },
@@ -1754,26 +1886,27 @@ if __name__ == '__main__':
                 first_arg_offset = 2
             
             if operand == 'b3':
-                set_variables.append(f'self.b = (opcode >> 3) & 0x07')
+                set_variables.append(f'self._b = (opcode >> 3) & 0x07')
                 str_args.append('b={self.b}')
             elif operand == 'cc3':
                 set_variables.append(f'self._cc = (opcode >> 3) & 0x07')
                 str_args.append('cc={self.cc}')
             elif operand == 'd':
-                set_variables.append(f'self.d = self._ram.get_byte(self.PC + 2, signed=False)')
-                str_args.append('d={self.d:02X}h')
+                set_variables.append(f'self._d = self._ram.get_byte(self._PC + 2, signed=False)')
+                str_args.append('d={self.d}')
             elif operand == 'dd4':
                 set_variables.append(f'self._dd = (opcode >> 4) & 0x03')
                 str_args.append('dd={self.dd}')
             elif operand == 'e':
-                set_variables.append(f'self.e = self._ram.get_byte(self.PC + {first_arg_offset}, signed=True)')
-                str_args.append('e={self.e:02X}h')
+                set_variables.append(f'self._e = self._ram.get_byte(self._PC + {first_arg_offset}, signed=True)')
+                set_variables.append(f'self._jump_destination = self._PC + self.size + self.e')
+                str_args.append('e={self.e}h')
             elif operand == 'n':
-                set_variables.append(f'self.n = self._ram.get_byte(self.PC + {first_arg_offset}, signed=False)')
-                str_args.append('n={self.n:02X}h')
+                set_variables.append(f'self._n = self._ram.get_byte(self._PC + {first_arg_offset}, signed=False)')
+                str_args.append('n={self.n}')
             elif operand == 'nn':
-                set_variables.append(f'self.nn = self._ram.get_word(self.PC + {first_arg_offset})')
-                str_args.append('nn={self.nn:04X}h')
+                set_variables.append(f'self._nn = self._ram.get_word(self._PC + {first_arg_offset})')
+                str_args.append('nn={self._nn}')
             elif operand == 'pp4':
                 set_variables.append(f'self._pp = (opcode >> 4) & 0x03')
                 str_args.append('pp={self.pp}')
@@ -1794,7 +1927,7 @@ if __name__ == '__main__':
                 str_args.append('rr={self.rr}')
             elif operand == 't3':
                 set_variables.append(f'self._t = (opcode >> 3) & 0x07')
-                str_args.append('t={self._t}, p={self.p:02X}h')
+                str_args.append('t={self._t}, p={self.p}')
             elif operand == 'ss4':
                 set_variables.append(f'self._ss = (opcode >> 4) & 0x03')
                 str_args.append('ss={self.ss}')
@@ -1829,54 +1962,78 @@ if __name__ == '__main__':
         for operand in instr['operands']:
             operand_no_digit = re.sub(r'[0-9]$', '', operand)
             match operand_no_digit:
+                case 'b':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def b(self: Self) -> str:\n'
+                    output += '        return z80.instruction.FormattingType.b(self._b)\n'
                 case 'cc':
                     output += '\n'
                     output += '    @property\n'
                     output += '    def cc(self: Self) -> str:\n'
-                    output += '        return self.cc2name[self._cc]\n'
+                    output += '        return z80.instruction.FormattingType.cc(self.cc2name[self._cc])\n'
+                case 'd':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def d(self: Self) -> str:\n'
+                    output += '        return z80.instruction.FormattingType.d(self._d)\n'
                 case 'dd':
                     output += '\n'
                     output += '    @property\n'
                     output += '    def dd(self: Self) -> str:\n'
-                    output += '        return self.dd2name[self._dd]\n'
+                    output += '        return z80.instruction.FormattingType.dd(self.dd2name[self._dd])\n'
                 case 'e':
                     output += '\n'
                     output += '    @property\n'
-                    output += '    def jump_destination(self: Self) -> int:\n'
-                    output += '        return self.PC + self.size + self.e\n'
+                    output += '    def e(self: Self) -> int:\n'
+                    output += '        return z80.instruction.FormattingType.e(self._e)\n'
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def jump_destination(self: Self) -> str:\n'
+                    output += '        return z80.instruction.FormattingType.jp(self._jump_destination)\n'
+                case 'n':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def n(self: Self) -> str:\n'
+                    output += '        return z80.instruction.FormattingType.n(self._n)\n'
+                case 'nn':
+                    output += '\n'
+                    output += '    @property\n'
+                    output += '    def nn(self: Self) -> str:\n'
+                    output += '        return z80.instruction.FormattingType.nn(self._nn)\n'
                 case 'pp':
                     output += '\n'
                     output += '    @property\n'
                     output += '    def pp(self: Self) -> str:\n'
-                    output += '        return self.pp2name[self._pp]\n'
+                    output += '        return z80.instruction.FormattingType.pp(self.pp2name[self._pp])\n'
                 case 'qq':
                     output += '\n'
                     output += '    @property\n'
                     output += '    def qq(self: Self) -> str:\n'
-                    output += '        return self.qq2name[self._qq]\n'
+                    output += '        return z80.instruction.FormattingType.qq(self.qq2name[self._qq])\n'
                 case 'r':
                     output += '\n'
                     output += '    @property\n'
                     output += '    def r(self: Self) -> str:\n'
-                    output += '        return self.r2name[self._r]\n'
+                    output += '        return z80.instruction.FormattingType.r(self.r2name[self._r])\n'
                 case 'rprime':
                     output += '\n'
                     output += '    @property\n'
                     output += '    def rprime(self: Self) -> str:\n'
-                    output += '        return self.r2name[self._rprime]\n'
+                    output += '        return z80.instruction.FormattingType.r(self.r2name[self._rprime])\n'
                 case 'rr':
                     output += '\n'
                     output += '    @property\n'
                     output += '    def rr(self: Self) -> str:\n'
-                    output += '        return self.rr2name[self._rr]\n'
+                    output += '        return z80.instruction.FormattingType.rr(self.rr2name[self._rr])\n'
                 case 'ss':
                     output += '\n'
                     output += '    @property\n'
                     output += '    def ss(self: Self) -> str:\n'
-                    output += '        return self.ss2name[self._ss]\n'
+                    output += '        return z80.instruction.FormattingType.ss(self.ss2name[self._ss])\n'
                 case 't':
                     output += '\n'
                     output += '    @property\n'
                     output += '    def p(self: Self) -> int:\n'
-                    output += '        return self.t2p[self._t]\n'
+                    output += '        return z80.instruction.FormattingType.p(self.t2p[self._t])\n'
     print(output)

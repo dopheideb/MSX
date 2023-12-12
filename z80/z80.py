@@ -69,15 +69,24 @@ class Z80:
                 registers=self.registers,
                 opcode=self._opcode,
             )
+            return instruction
         except KeyError:
             logging.exception(f'Unknown opcode 0x{self._opcode:02X}.')
-            raise
-        return instruction
+            instruction = z80.instruction.Illegal(
+                ram=self._ram,
+                registers=self.registers,
+                opcode=self._opcode,
+            )
+            return instruction
+        return None
     
     def execute_opcode(self: Self) -> z80.instruction.Instruction:
         instruction = self.decode_instruction()
         logging.debug('\t\t\t\t\t' + str(instruction))
-        self.registers.PC += instruction.size
+        if instruction is None:
+            self.registers.PC += 1
+        else:
+            self.registers.PC += instruction.size
         if hasattr(instruction, 'execute'):
             instruction.execute()
         return instruction

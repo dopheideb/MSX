@@ -6,6 +6,7 @@ import sys
 from   typing import Self, Optional
 import z80
 import z80.disasm.instruction
+import z80.z80dasm.instruction
 
 class Disasm:
     def __init__(self: Self, filename: Optional[str]=None) -> None:
@@ -32,13 +33,23 @@ class Disasm:
                     self.PC_magic += 0x4000
                     self.add_routine(self.PC_magic, 'PC = PC[2 * A]')
         self.z80.load_instruction_set('z80.disasm.instruction', overwrite=True)
+        #self.z80.load_instruction_set('z80.z80dasm.instruction', overwrite=True)
     
     def add_routine(self: Self, address: int, routine_name: str) -> None:
         z80.disasm.instruction.aux.add_routine(address, routine_name)
     def get_routine(self: Self, address: int) -> str:
         return z80.disasm.instruction.aux.get_routine(address)
     
-    def run(self: Self) -> dict:
+    def run(self: Self, style: Optional[str]=None):
+        match style:
+            case None | 'branch all':
+                return self.run_branch_all()
+            case 'linear':
+                return self.run_linear()
+            case _:
+                raise ValueError(f"Unknown run style '{style}'")
+    
+    def run_branch_all(self: Self) -> dict:
         pc_queue = queue.Queue()
         pc_queue.put(self.z80.ram.get_word(0x4002))
         
@@ -73,14 +84,14 @@ class Disasm:
             match instr.name():
                 case "CALL nn" | "CALL cc, nn":
                     pc_queue.put(self.z80.PC)
-                    self.disasm[self.z80.PC]['from'][instr.PC] = instr.name()
+                    self.disasm[self.z80.PC]['from'][instr._PC] = instr.name()
                     
-                    logging.debug(f"Adding CALL destination 0x{instr.nn:04X} also to queue.")
-                    pc_queue.put(instr.nn)
-                    self.disasm[instr.nn]['from'][instr.PC] = instr.name()
+                    logging.debug(f"Adding CALL destination {instr.nn} also to queue.")
+                    pc_queue.put(instr._nn)
+                    self.disasm[instr._nn]['from'][instr._PC] = instr.name()
                     
-                    if self.PC_magic is not None and instr.nn == self.PC_magic:
-                        offset = instr.PC + 3
+                    if self.PC_magic is not None and instr._nn == self.PC_magic:
+                        offset = instr._PC + 3
                         last_jump = None
                         while True:
                             jump = self.z80._ram.get_word(offset)
@@ -92,13 +103,13 @@ class Disasm:
                             logging.debug(f'[{offset:04X}] Part of a jump table. Jump to 0x{jump:04X}.')
                             pc_queue.put(jump)
                 case "JP nn":
-                    logging.debug(f"{pc:04X}: 'JP nn' encountered. Only branching to 0x{instr.nn:04X}.")
-                    pc_queue.put(instr.nn)
-                    self.disasm[instr.nn]['from'][instr.PC] = instr.name()
+                    logging.debug(f"{pc:04X}: 'JP nn' encountered. Only branching to {instr.nn}.")
+                    pc_queue.put(instr._nn)
+                    self.disasm[instr._nn]['from'][instr._PC] = instr.name()
                 case "JR e":
-                    logging.debug(f"{pc:04X}: '{instr.name()}' encountered. Only branching to 0x{instr.jump_destination:04X}.")
-                    pc_queue.put(instr.jump_destination)
-                    self.disasm[instr.jump_destination]['from'][instr.PC] = instr.name()
+                    logging.debug(f"{pc:04X}: '{instr.name()}' encountered. Only branching to {instr.jump_destination}.")
+                    pc_queue.put(instr._jump_destination)
+                    self.disasm[instr._jump_destination]['from'][instr._PC] = instr.name()
                 case "DJNZ, e"  |\
                      "JR C, e"  |\
                      "JR NC, e" |\
@@ -106,17 +117,32 @@ class Disasm:
                      "JR NZ, e":
                     pc_queue.put(self.z80.PC)
                     
-                    logging.debug(f"{pc:04X}: '{instr.name()}' encountered. Also branching to 0x{instr.jump_destination:04X}.")
+                    logging.debug(f"{pc:04X}: '{instr.name()}' encountered. Also branching to {instr.jump_destination}.")
                     
-                    pc_queue.put(instr.jump_destination)
-                    self.disasm[instr.jump_destination]['from'][instr.PC] = instr.name()
+                    pc_queue.put(instr._jump_destination)
+                    self.disasm[instr._jump_destination]['from'][instr._PC] = instr.name()
                 case "RET":
                     logging.debug(f"{pc:04X}: 'RET' encountered. Discontinuing this branch.")
                 case _:
                     logging.debug(f"[{pc:04X}] Enqueueing PC={self.z80.PC:04X}. Handled {instr_name}.")
-                    self.disasm[self.z80.PC]['from'][instr.PC] = 'fall through'
+                    self.disasm[self.z80.PC]['from'][instr._PC] = 'fall through'
                     pc_queue.put(self.z80.PC)
             
             logging.debug(f'DISASM: {type(instr).__name__} ' + str(instr))
         
+        return self.disasm
+
+    def run_linear(self: Self) -> dict:
+        self.z80.PC = 0x4000
+        
+        while self.z80.PC < 0x8000:
+            try:
+                self.z80.fetch_opcode()
+                instr = self.z80.execute_opcode()
+            except NotImplementedError as e:
+                logging.exception(f'Bailing out because of unknown opcode at pc {pc:04X}: 0x{e.args[0]:02X}')
+                break
+            self.disasm[self.z80.PC]['disasm'] = str(instr)
+            instr_name = type(instr).__name__
+
         return self.disasm

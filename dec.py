@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import disasm
 import logging
 import sys
@@ -6,14 +8,18 @@ import z80
 logging.basicConfig(level=logging.DEBUG)
 
 if __name__ == '__main__':
+    show_callees = True
+    show_routines = True
     dasm = disasm.Disasm(sys.argv[1])
     dasm.add_routine(0x4685, 'CLUELESS_FOR_NOW')
     
-    output = dasm.run()
+    output = dasm.run('branch all')
+    #output = dasm.run('linear')
     for PC in sorted(output.keys()):
         try:
             routine_name = dasm.get_routine(PC)
-            print(f"; Start of routine {routine_name}.")
+            if show_routines:
+                print(f"; Start of routine {routine_name}.")
         except KeyError:
             pass
         
@@ -28,7 +34,7 @@ if __name__ == '__main__':
                 if output[PC]['from'][only_key] != 'fall through':
                     show_from = True
             
-            if show_from:
+            if show_from and show_callees:
                 print(f";")
                 print(f";")
                 print(f";")

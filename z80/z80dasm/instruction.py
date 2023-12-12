@@ -3,8 +3,6 @@ from   typing import Self, List
 import z80.instruction
 import z80.instructions
 
-z80.instruction.Instruction.set_PC_formatter(func=lambda instr: f'{instr.PC:04x}')
-
 
 
 class ADC_A_deref_HL(z80.instructions.ADC_A_deref_HL):
